@@ -1,3 +1,43 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html, body {
+  height: 100%;
+  background: #ffffff;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  color: #0f172a;
+}
+
+/* subtle noise overlay like Apple */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+  mix-blend-mode: multiply;
+}
+
+/* smooth rendering */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* premium hover system */
+.glass-hover {
+  transition: all 0.35s ease;
+}
+
+.glass-hover:hover {
+  transform: translateY(-2px);
+}
+
+/* soft focus */
+input:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(127, 29, 29, 0.08);
+  border-color: rgba(127, 29, 29, 0.3);
+}
