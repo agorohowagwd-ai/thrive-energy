@@ -1,3 +1,5 @@
+import DashboardHeader from "./dashboard/DashboardHeader"
+import DashboardStats from "./dashboard/DashboardStats"
 import { useMemo } from "react"
 import Insights from "./Insights"
 
@@ -54,102 +56,16 @@ export default function Dashboard({
   // ─────────────────────────────
 
   return (
-    <main className="flex-1 min-h-screen px-14 py-10 bg-[#FBFAF8] relative">
-
+<main className="flex-1 min-h-screen bg-[#FBFAF8] relative px-5 md:px-10 xl:px-14 py-6 md:py-8 xl:py-10 overflow-x-hidden">
       {/* soft premium background glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-300px] right-[-300px] w-[700px] h-[700px] rounded-full bg-[#6A1E2B]/10 blur-[160px]" />
         <div className="absolute bottom-[-300px] left-[-250px] w-[650px] h-[650px] rounded-full bg-black/5 blur-[180px]" />
       </div>
 
-      {/* HEADER */}
-      <div className="relative z-10 mb-12">
+      {/* HEADER + KPI */}
+      <DashboardHeader stats={stats} />
 
-        <div className="text-xs uppercase tracking-[0.35em] text-black/40">
-          Thrive Dashboard
-        </div>
-
-        <h1 className="text-5xl font-semibold tracking-tight mt-4">
-          Good morning
-        </h1>
-
-        <p className="mt-3 text-black/50">
-          Track your energy, focus and emotional patterns.
-        </p>
-
-      </div>
-            {/* KPI GRID */}
-            <div className="relative z-10 grid grid-cols-4 gap-5 mb-12">
-
-{/* AVERAGE ENERGY */}
-<div className="group rounded-[28px] bg-white/60 backdrop-blur-2xl border border-black/5 p-6 transition-all duration-500 hover:-translate-y-1 hover:border-[#6A1E2B]/20 hover:shadow-[0_25px_80px_rgba(106,30,43,0.12)]">
-
-  <div className="text-xs uppercase tracking-[0.3em] text-black/40">
-    Average
-  </div>
-
-  <div className="mt-4 text-4xl font-semibold transition-colors group-hover:text-[#6A1E2B]">
-    {stats.average}
-  </div>
-
-  <div className="text-sm text-black/40 mt-2">
-    Energy level
-  </div>
-
-</div>
-
-{/* HIGHEST */}
-<div className="group rounded-[28px] bg-white/60 backdrop-blur-2xl border border-black/5 p-6 transition-all duration-500 hover:-translate-y-1 hover:border-[#6A1E2B]/20 hover:shadow-[0_25px_80px_rgba(106,30,43,0.12)]">
-
-  <div className="text-xs uppercase tracking-[0.3em] text-black/40">
-    Peak
-  </div>
-
-  <div className="mt-4 text-4xl font-semibold transition-colors group-hover:text-[#6A1E2B]">
-    {stats.highest}
-  </div>
-
-  <div className="text-sm text-black/40 mt-2">
-    Highest value
-  </div>
-
-</div>
-
-{/* LOWEST */}
-<div className="group rounded-[28px] bg-white/60 backdrop-blur-2xl border border-black/5 p-6 transition-all duration-500 hover:-translate-y-1 hover:border-[#6A1E2B]/20 hover:shadow-[0_25px_80px_rgba(106,30,43,0.12)]">
-
-  <div className="text-xs uppercase tracking-[0.3em] text-black/40">
-    Low
-  </div>
-
-  <div className="mt-4 text-4xl font-semibold transition-colors group-hover:text-[#6A1E2B]">
-    {stats.lowest}
-  </div>
-
-  <div className="text-sm text-black/40 mt-2">
-    Minimum energy
-  </div>
-
-</div>
-
-{/* STREAK */}
-<div className="group rounded-[28px] bg-white/60 backdrop-blur-2xl border border-black/5 p-6 transition-all duration-500 hover:-translate-y-1 hover:border-[#6A1E2B]/20 hover:shadow-[0_25px_80px_rgba(106,30,43,0.12)]">
-
-  <div className="text-xs uppercase tracking-[0.3em] text-black/40">
-    Streak
-  </div>
-
-  <div className="mt-4 text-4xl font-semibold transition-colors group-hover:text-[#6A1E2B]">
-    {stats.streak}
-  </div>
-
-  <div className="text-sm text-black/40 mt-2">
-    Active days
-  </div>
-
-</div>
-
-</div>
       {/* AI COACH SECTION */}
       <div className="relative z-10 mb-12">
 
