@@ -1,36 +1,56 @@
 import { useState } from "react"
 
-export default function MobileNav({ logout }) {
-
-  const [active, setActive] = useState("home")
-
-  const items = [
-    { id: "home", label: "Home" },
-    { id: "analytics", label: "Stats" },
-    { id: "add", label: "Add" },
-    { id: "profile", label: "Profile" },
-  ]
+export default function MobileNav({ logout, onAdd }) {
+  const [open, setOpen] = useState(false)
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
+    <>
+      {/* FAB BUTTON */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="
+          fixed bottom-6 right-6
+          w-14 h-14
+          rounded-full
+          bg-[#6A1E2B]
+          text-white
+          text-2xl
+          shadow-xl
+          z-50
+        "
+      >
+        +
+      </button>
 
-      <div className="mx-4 mb-4 rounded-2xl bg-white/70 backdrop-blur-2xl border border-black/5 shadow-lg flex justify-between px-4 py-3">
+      {/* QUICK ACTIONS PANEL */}
+      {open && (
+        <div className="
+          fixed bottom-24 right-6
+          bg-white/90 backdrop-blur-2xl
+          border border-black/5
+          rounded-2xl
+          p-4
+          shadow-xl
+          flex flex-col gap-3
+          z-50
+        ">
 
-        {items.map((item) => (
           <button
-            key={item.id}
-            onClick={() => setActive(item.id)}
-            className={`
-              flex-1 py-2 text-xs transition
-              ${active === item.id ? "text-[#6A1E2B] font-medium" : "text-black/40"}
-            `}
+            onClick={onAdd}
+            className="text-left px-4 py-2 rounded-xl hover:bg-black/5"
           >
-            {item.label}
+            ➕ Add Entry
           </button>
-        ))}
 
-      </div>
+          <button
+            onClick={logout}
+            className="text-left px-4 py-2 rounded-xl hover:bg-black/5 text-red-500"
+          >
+            Logout
+          </button>
 
-    </div>
+        </div>
+      )}
+    </>
   )
 }

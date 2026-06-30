@@ -1,443 +1,459 @@
-import DashboardHeader from "./dashboard/DashboardHeader"
-import DashboardStats from "./dashboard/DashboardStats"
-import { useMemo } from "react"
-import Insights from "./Insights"
+import { useMemo, useState } from "react"
+
+import KPIGrid from "./dashboard/KPIGrid"
+import AICoachCard from "./dashboard/AICoachCard"
+import EnergyChart from "./dashboard/EnergyChart"
+
+import PremiumBanner from "./premium/PremiumBanner"
+import PremiumModal from "./premium/PremiumModal"
+
+import useSubscription from "../hooks/useSubscription"
 
 export default function Dashboard({
-  entries,
+  user,
+
+  entries = [],
+  weeklyData = [],
+  stats = null,
+
   activity,
   setActivity,
+
   notes,
   setNotes,
+
   energy,
   setEnergy,
+
   category,
   setCategory,
+
   mood,
   setMood,
+
   addEntry,
+  deleteEntry,
 }) {
 
-  // ─────────────────────────────
-  // METRICS
-  // ─────────────────────────────
+  //────────────────────────────
+  // UI
+  //────────────────────────────
 
-  const stats = useMemo(() => {
-    if (!entries.length) {
-      return {
-        average: 0,
-        highest: 0,
-        lowest: 0,
-        streak: 0,
-      }
-    }
+  const [range, setRange] = useState("week")
 
-    const energies = entries.map(e => e.energy)
+  const [selectedEntry, setSelectedEntry] =
+    useState(null)
 
-    const average =
-      energies.reduce((a, b) => a + b, 0) / energies.length
+  const [showPremium, setShowPremium] =
+    useState(false)
 
-    const highest = Math.max(...energies)
-    const lowest = Math.min(...energies)
+  //────────────────────────────
+  // SUBSCRIPTION
+  //────────────────────────────
 
-    // simple streak logic (same-day grouping)
-    const dates = [...new Set(entries.map(e => e.date))]
+  const subscription =
+    useSubscription(user)
 
-    return {
-      average: average.toFixed(1),
-      highest,
-      lowest,
-      streak: dates.length,
-    }
+  //────────────────────────────
+  // SORT
+  //────────────────────────────
+
+  const sortedEntries = useMemo(() => {
+    if (!entries.length) return []
+
+    return [...entries].sort(
+      (a, b) =>
+        new Date(b.date) -
+        new Date(a.date)
+    )
   }, [entries])
 
-  // ─────────────────────────────
+  //────────────────────────────
+  // PEAKS
+  //────────────────────────────
+
+  const peaks = useMemo(() => {
+    if (!weeklyData.length) return []
+
+    const max = Math.max(
+      ...weeklyData.map(
+        (d) => d.energy || 0
+      )
+    )
+
+    return weeklyData.filter(
+      (d) => d.energy === max
+    )
+  }, [weeklyData])
+
+  //────────────────────────────
+  // CHART CLICK
+  //────────────────────────────
+
+  function handlePointClick(data) {
+    if (!data?.date) return
+
+    const match = entries.find(
+      (e) => e.date === data.date
+    )
+
+    if (!match) return
+
+    setSelectedEntry(match)
+
+    const el =
+      document.getElementById(
+        `entry-${match.id}`
+      )
+
+    if (el) {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      })
+    }
+  }
+
+  //────────────────────────────
   // UI
-  // ─────────────────────────────
+  //────────────────────────────
 
   return (
-<main className="flex-1 min-h-screen bg-[#FBFAF8] relative px-5 md:px-10 xl:px-14 py-6 md:py-8 xl:py-10 overflow-x-hidden">
-      {/* soft premium background glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-300px] right-[-300px] w-[700px] h-[700px] rounded-full bg-[#6A1E2B]/10 blur-[160px]" />
-        <div className="absolute bottom-[-300px] left-[-250px] w-[650px] h-[650px] rounded-full bg-black/5 blur-[180px]" />
+    <main className="flex-1 min-h-screen px-5 md:px-10 xl:px-14 py-6 md:py-8 xl:py-10 overflow-x-hidden">
+
+      {/* HEADER */}
+
+      <div className="relative z-10">
+
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Dashboard
+        </h1>
+
+        <p className="text-black/40 mt-2">
+          Track energy, detect patterns,
+          and unlock AI insights
+        </p>
+
       </div>
 
-      {/* HEADER + KPI */}
-      <DashboardHeader stats={stats} />
+      {/* PREMIUM */}
 
-      {/* AI COACH SECTION */}
-      <div className="relative z-10 mb-12">
+      <div className="mt-8">
 
-        <div className="rounded-[32px] bg-white/70 backdrop-blur-2xl border border-black/5 p-8 transition-all duration-500 hover:border-[#6A1E2B]/20 hover:shadow-[0_30px_90px_rgba(106,30,43,0.10)]">
+        <PremiumBanner
+          user={user}
+          onUpgrade={() =>
+            setShowPremium(true)
+          }
+        />
 
-          <div className="flex items-start justify-between">
+      </div>
 
-            <div>
+      {/* KPI */}
 
-              <div className="text-[11px] uppercase tracking-[0.35em] text-black/40">
-                AI Coach
-              </div>
+      <div className="relative z-10 mt-8">
 
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight">
-                Your Energy Insight
-              </h2>
+        <KPIGrid stats={stats} />
 
+      </div>
+
+      {/* AI */}
+
+      <div className="relative z-10 mt-8">
+
+        {subscription.locked ? (
+
+          <div className="rounded-[32px] bg-white/70 backdrop-blur-xl border border-black/5 p-10 text-center">
+
+            <div className="text-6xl">
+              🔒
             </div>
 
-            <div className="text-xs text-black/40">
-              Live analysis
-            </div>
+            <h2 className="mt-5 text-2xl font-semibold">
+
+              AI Coach is Premium
+
+            </h2>
+
+            <p className="mt-4 text-black/50">
+
+              Unlock personalized
+              recommendations,
+              weekly reports,
+              future predictions
+              and AI Memory.
+
+            </p>
+
+            <button
+              onClick={() =>
+                setShowPremium(true)
+              }
+              className="mt-8 rounded-xl bg-[#6A1E2B] px-7 py-3 text-white"
+            >
+
+              Upgrade
+
+            </button>
 
           </div>
 
-          {/* INSIGHT TEXT */}
-          <div className="mt-6 text-black/60 leading-7 max-w-3xl">
+        ) : stats ? (
 
-            {entries.length === 0 ? (
-              <span>
-                Start adding entries to unlock personalized insights about your energy patterns.
-              </span>
-            ) : (
-              <span>
-                Your energy is most stable on days when you maintain consistent activity patterns. You tend to perform better in focused tasks after higher-energy entries.
-              </span>
-            )}
+          <AICoachCard
+            entries={entries}
+            stats={stats}
+          />
+
+        ) : (
+
+          <div className="rounded-[32px] bg-white/70 border border-black/5 p-8 text-black/40">
+
+            Loading AI...
+
+          </div>
+
+        )}
+
+      </div>
+
+      {/* RANGE */}
+
+      <div className="mt-6 flex gap-2">
+
+        {["week", "month", "year"].map(
+          (r) => (
+
+            <button
+              key={r}
+              onClick={() =>
+                setRange(r)
+              }
+              className={`px-4 py-2 rounded-full transition ${
+                range === r
+                  ? "bg-[#6A1E2B] text-white"
+                  : "bg-white/60 border border-black/5"
+              }`}
+            >
+
+              {r.toUpperCase()}
+
+            </button>
+
+          )
+        )}
+
+      </div>
+
+      {/* CHART */}
+
+      <div className="mt-8">
+
+        <EnergyChart
+          weeklyData={weeklyData}
+          range={range}
+          peaks={peaks}
+          onPointClick={
+            handlePointClick
+          }
+        />
+
+      </div>
+
+      {/* GRID */}
+
+      <div className="mt-10 grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-8">
+
+        {/* FORM */}
+
+        <div className="rounded-[32px] bg-white/70 backdrop-blur-2xl border border-black/5 p-8">
+
+          <h2 className="text-xl font-semibold">
+            Log Energy
+          </h2>
+
+          <input
+            className="w-full mt-6 p-4 rounded-2xl bg-white/60 border"
+            placeholder="Activity"
+            value={activity}
+            onChange={(e) =>
+              setActivity(
+                e.target.value
+              )
+            }
+          />
+
+          <textarea
+            className="w-full mt-4 p-4 rounded-2xl bg-white/60 border h-28"
+            placeholder="Notes"
+            value={notes}
+            onChange={(e) =>
+              setNotes(
+                e.target.value
+              )
+            }
+          />
+
+          <input
+            className="w-full mt-4 p-4 rounded-2xl bg-white/60 border"
+            placeholder="Energy"
+            value={energy}
+            onChange={(e) =>
+              setEnergy(
+                e.target.value
+              )
+            }
+          />
+
+          <div className="mt-4 flex gap-2 flex-wrap">
+
+            {[
+              "Work",
+              "Health",
+              "Study",
+              "Social",
+            ].map((c) => (
+
+              <button
+                key={c}
+                onClick={() =>
+                  setCategory(c)
+                }
+                className={`px-4 py-2 rounded-full ${
+                  category === c
+                    ? "bg-[#6A1E2B] text-white"
+                    : "bg-white/60 border"
+                }`}
+              >
+
+                {c}
+
+              </button>
+
+            ))}
 
           </div>
 
-          {/* HIGHLIGHTS */}
-          <div className="mt-8 grid grid-cols-3 gap-5">
+          <div className="mt-4 flex gap-2">
 
-            <div className="rounded-2xl bg-white/50 border border-black/5 p-5 hover:border-[#6A1E2B]/20 transition">
-              <div className="text-xs text-black/40 uppercase tracking-[0.2em]">
-                Pattern
-              </div>
-              <div className="mt-3 text-lg font-medium">
-                Consistency
-              </div>
-            </div>
+            {[
+              "🙂",
+              "😐",
+              "😃",
+              "⚡",
+            ].map((m) => (
 
-            <div className="rounded-2xl bg-white/50 border border-black/5 p-5 hover:border-[#6A1E2B]/20 transition">
-              <div className="text-xs text-black/40 uppercase tracking-[0.2em]">
-                Peak Time
-              </div>
-              <div className="mt-3 text-lg font-medium">
-                Morning
-              </div>
-            </div>
+              <button
+                key={m}
+                onClick={() =>
+                  setMood(m)
+                }
+                className={`w-10 h-10 rounded-xl ${
+                  mood === m
+                    ? "bg-[#6A1E2B] text-white"
+                    : "border"
+                }`}
+              >
 
-            <div className="rounded-2xl bg-white/50 border border-black/5 p-5 hover:border-[#6A1E2B]/20 transition">
-              <div className="text-xs text-black/40 uppercase tracking-[0.2em]">
-                Recovery
-              </div>
-              <div className="mt-3 text-lg font-medium">
-                Moderate
-              </div>
-            </div>
+                {m}
+
+              </button>
+
+            ))}
 
           </div>
+
+          <button
+            onClick={addEntry}
+            className="w-full mt-6 py-4 rounded-2xl bg-[#6A1E2B] text-white"
+          >
+
+            Save Entry
+
+          </button>
 
         </div>
 
-      </div>
-            {/* QUICK ENTRY */}
-            <div className="relative z-10 mb-12 grid grid-cols-[420px_1fr] gap-8">
+        {/* TIMELINE */}
 
-{/* FORM */}
-<div className="rounded-[32px] bg-white/70 backdrop-blur-2xl border border-black/5 p-8 transition-all duration-500 hover:border-[#6A1E2B]/20 hover:shadow-[0_30px_90px_rgba(106,30,43,0.08)]">
-
-  <div className="text-[11px] uppercase tracking-[0.35em] text-black/40">
-    Quick Entry
-  </div>
-
-  <h2 className="mt-3 text-2xl font-semibold">
-    Log your energy
-  </h2>
-
-  {/* ACTIVITY */}
-  <input
-    className="w-full mt-6 p-4 rounded-2xl bg-white/60 border border-black/5 focus:border-[#6A1E2B]/30 transition outline-none"
-    placeholder="What did you do?"
-    value={activity}
-    onChange={(e) => setActivity(e.target.value)}
-  />
-
-  {/* NOTES */}
-  <textarea
-    className="w-full mt-4 p-4 rounded-2xl bg-white/60 border border-black/5 focus:border-[#6A1E2B]/30 transition outline-none h-28"
-    placeholder="Notes (optional)"
-    value={notes}
-    onChange={(e) => setNotes(e.target.value)}
-  />
-
-  {/* ENERGY INPUT */}
-  <div className="mt-4">
-    <input
-      type="number"
-      className="w-full p-4 rounded-2xl bg-white/60 border border-black/5 focus:border-[#6A1E2B]/30 transition outline-none"
-      placeholder="Energy (1–10)"
-      value={energy}
-      onChange={(e) => setEnergy(e.target.value)}
-    />
-  </div>
-
-  {/* CATEGORY */}
-  <div className="mt-4 flex flex-wrap gap-2">
-    {["Work", "Health", "Study", "Social"].map((c) => (
-      <button
-        key={c}
-        type="button"
-        onClick={() => setCategory(c)}
-        className={`px-4 py-2 rounded-full text-sm border transition
-          ${
-            category === c
-              ? "bg-[#6A1E2B] text-white border-[#6A1E2B]"
-              : "bg-white/50 border-black/5 text-black/60 hover:border-[#6A1E2B]/30 hover:text-[#6A1E2B]"
-          }
-        `}
-      >
-        {c}
-      </button>
-    ))}
-  </div>
-
-  {/* MOOD */}
-  <div className="mt-4 flex gap-2">
-    {["🙂", "😐", "😃", "⚡"].map((m) => (
-      <button
-        key={m}
-        type="button"
-        onClick={() => setMood(m)}
-        className={`w-10 h-10 rounded-xl border transition
-          ${
-            mood === m
-              ? "bg-[#6A1E2B] text-white border-[#6A1E2B]"
-              : "bg-white/50 border-black/5 hover:border-[#6A1E2B]/30"
-          }
-        `}
-      >
-        {m}
-      </button>
-    ))}
-  </div>
-
-  {/* SAVE BUTTON */}
-  <button
-    onClick={addEntry}
-    className="w-full mt-6 py-4 rounded-2xl bg-[#6A1E2B] text-white font-medium transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_25px_70px_rgba(106,30,43,0.25)]"
-  >
-    Save Entry
-  </button>
-
-</div>
-
-{/* RIGHT SIDE (PREVIEW / INSIGHTS MINI) */}
-<div className="rounded-[32px] bg-white/70 backdrop-blur-2xl border border-black/5 p-8">
-
-  <div className="text-[11px] uppercase tracking-[0.35em] text-black/40">
-    Today
-  </div>
-
-  <h3 className="mt-3 text-2xl font-semibold">
-    Energy Overview
-  </h3>
-
-  <div className="mt-6 space-y-4 text-black/60">
-
-    <div className="flex justify-between">
-      <span>Entries</span>
-      <span className="text-black">{entries.length}</span>
-    </div>
-
-    <div className="flex justify-between">
-      <span>Average</span>
-      <span className="text-black">{stats.average}</span>
-    </div>
-
-    <div className="flex justify-between">
-      <span>Peak</span>
-      <span className="text-black">{stats.highest}</span>
-    </div>
-
-  </div>
-
-  <div className="mt-8 text-sm text-black/50 leading-6">
-    Your data is building a personal energy model. The more consistent entries you add, the more accurate your insights become.
-  </div>
-
-</div>
-
-</div>
-      {/* TIMELINE + HISTORY */}
-      <div className="relative z-10 grid grid-cols-[1fr_1fr] gap-8 mb-16">
-
-        {/* LEFT: TIMELINE */}
         <div className="rounded-[32px] bg-white/70 backdrop-blur-2xl border border-black/5 p-8">
 
-          <div className="text-[11px] uppercase tracking-[0.35em] text-black/40">
+          <h2 className="text-xl font-semibold">
+
             Timeline
-          </div>
 
-          <h3 className="mt-3 text-2xl font-semibold">
-            Recent Activity
-          </h3>
+          </h2>
 
-          <div className="mt-6 space-y-4 max-h-[420px] overflow-auto pr-2">
+          <div className="mt-6 space-y-4">
 
-            {entries.length === 0 && (
-              <div className="text-black/40 text-sm">
-                No entries yet. Start logging your energy.
+            {!sortedEntries.length && (
+
+              <div className="text-black/40">
+
+                No entries yet
+
               </div>
+
             )}
 
-            {entries.map((e, i) => (
+            {sortedEntries.map((e) => (
+
               <div
-                key={i}
-                className="group rounded-2xl border border-black/5 bg-white/50 p-4 transition hover:border-[#6A1E2B]/20 hover:shadow-[0_20px_60px_rgba(106,30,43,0.08)]"
+                key={e.id}
+                id={`entry-${e.id}`}
+                onClick={() =>
+                  setSelectedEntry(e)
+                }
+                className={`p-5 rounded-2xl border cursor-pointer transition ${
+                  selectedEntry?.id ===
+                  e.id
+                    ? "border-[#6A1E2B] bg-[#6A1E2B]/5"
+                    : "bg-white/50 border-black/5"
+                }`}
               >
 
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between">
 
-                  <div className="font-medium group-hover:text-[#6A1E2B] transition">
-                    {e.activity}
+                  <div>
+
+                    <div className="font-medium">
+
+                      {e.activity}
+
+                    </div>
+
+                    <div className="text-sm text-black/40">
+
+                      {e.category}
+
+                    </div>
+
                   </div>
 
-                  <div className="text-sm text-black/50">
+                  <div className="font-semibold">
+
                     {e.energy}
+
                   </div>
-
-                </div>
-
-                <div className="mt-2 flex justify-between text-xs text-black/40">
-
-                  <span>
-                    {e.category}
-                  </span>
-
-                  <span>
-                    {e.date}
-                  </span>
 
                 </div>
 
               </div>
+
             ))}
 
           </div>
 
         </div>
 
-        {/* RIGHT: ENERGY FLOW BREAKDOWN */}
-        <div className="rounded-[32px] bg-white/70 backdrop-blur-2xl border border-black/5 p-8">
-
-          <div className="text-[11px] uppercase tracking-[0.35em] text-black/40">
-            Analysis
-          </div>
-
-          <h3 className="mt-3 text-2xl font-semibold">
-            Energy Breakdown
-          </h3>
-
-          <div className="mt-6 space-y-5">
-
-            {/* WORK */}
-            <div>
-              <div className="flex justify-between text-sm">
-                <span className="text-black/60">Work</span>
-                <span className="text-black">
-                  {entries.filter(e => e.category === "Work").length}
-                </span>
-              </div>
-
-              <div className="h-2 bg-black/5 rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-[#6A1E2B] w-[60%]" />
-              </div>
-            </div>
-
-            {/* HEALTH */}
-            <div>
-              <div className="flex justify-between text-sm">
-                <span className="text-black/60">Health</span>
-                <span className="text-black">
-                  {entries.filter(e => e.category === "Health").length}
-                </span>
-              </div>
-
-              <div className="h-2 bg-black/5 rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-[#6A1E2B] w-[40%]" />
-              </div>
-            </div>
-
-            {/* STUDY */}
-            <div>
-              <div className="flex justify-between text-sm">
-                <span className="text-black/60">Study</span>
-                <span className="text-black">
-                  {entries.filter(e => e.category === "Study").length}
-                </span>
-              </div>
-
-              <div className="h-2 bg-black/5 rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-[#6A1E2B] w-[50%]" />
-              </div>
-            </div>
-
-            {/* SOCIAL */}
-            <div>
-              <div className="flex justify-between text-sm">
-                <span className="text-black/60">Social</span>
-                <span className="text-black">
-                  {entries.filter(e => e.category === "Social").length}
-                </span>
-              </div>
-
-              <div className="h-2 bg-black/5 rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-[#6A1E2B] w-[35%]" />
-              </div>
-            </div>
-
-          </div>
-
-          <div className="mt-8 text-sm text-black/50 leading-6">
-            This breakdown helps identify where your energy is spent most frequently and how it affects your overall performance.
-          </div>
-
-        </div>
-
       </div>
-            {/* EMPTY STATE / MICRO UX LAYER */}
-            {entries.length === 0 && (
-        <div className="relative z-10 mt-10 rounded-[32px] bg-white/70 backdrop-blur-2xl border border-black/5 p-10 text-center">
 
-          <div className="text-[11px] uppercase tracking-[0.35em] text-black/40">
-            Welcome to Thrive
-          </div>
-
-          <h3 className="mt-4 text-3xl font-semibold">
-            Start your first energy entry
-          </h3>
-
-          <p className="mt-3 text-black/50 max-w-xl mx-auto leading-7">
-            Your dashboard will evolve as you log your daily energy.
-            Patterns, insights and AI coaching will appear here.
-          </p>
-
-          <div className="mt-6 text-sm text-[#6A1E2B] font-medium">
-            → Use Quick Entry to begin
-          </div>
-
-        </div>
-      )}
-
-      {/* FLOATING GLOW DECORATION */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-
-        <div className="absolute top-[20%] right-[-200px] w-[500px] h-[500px] bg-[#6A1E2B]/5 blur-[160px] rounded-full" />
-
-        <div className="absolute bottom-[-250px] left-[10%] w-[600px] h-[600px] bg-black/5 blur-[180px] rounded-full" />
-
-      </div>
+      <PremiumModal
+        open={showPremium}
+        onClose={() =>
+          setShowPremium(false)
+        }
+      />
 
     </main>
   )

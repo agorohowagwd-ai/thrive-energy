@@ -1,144 +1,261 @@
 import { useEffect, useState } from "react"
 import { supabase } from "./supabase"
 
-import Landing from "./components/Landing"
 import Auth from "./components/Auth"
 import Sidebar from "./components/Sidebar"
 import Dashboard from "./components/Dashboard"
 import Onboarding from "./components/Onboarding"
 import MobileNav from "./components/MobileNav"
 
+import useAppState from "./state/useAppState"
+import { buildDashboardData } from "./lib/energyEngine"
+
+import { initTelegram } from "./telegram/telegram"
+import { useTelegram } from "./telegram/useTelegram"
+
 export default function App() {
+  //────────────────────────────
+  // TELEGRAM
+  //────────────────────────────
 
-  const [view, setView] = useState("landing")
-  const [mode, setMode] = useState("login")
+  const { isTelegram, telegramUser } = useTelegram()
 
-  const [entries, setEntries] = useState([])
+  //────────────────────────────
+  // APP STATE
+  //────────────────────────────
 
-  const [activity, setActivity] = useState("")
-  const [notes, setNotes] = useState("")
-  const [energy, setEnergy] = useState("")
-  const [category, setCategory] = useState("Work")
-  const [mood, setMood] = useState("Focused")
-
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [showOnboarding, setShowOnboarding] = useState(false)
-  const [isPremium, setIsPremium] = useState(false)
+
+  //────────────────────────────
+  // DATA
+  //────────────────────────────
+
+  const {
+    entries,
+    setEntries,
+    loadEntries,
+    addEntry,
+    deleteEntry,
+  } = useAppState(user)
+
+  const safeEntries = Array.isArray(entries) ? entries : []
+
+  //────────────────────────────
+  // AI ENGINE
+  //────────────────────────────
+
+  const {
+    weeklyData,
+    stats,
+  } = buildDashboardData(safeEntries)
+
+  const safeWeeklyData = Array.isArray(weeklyData)
+    ? weeklyData
+    : []
+
+  const safeStats = stats ?? null
+
+  //────────────────────────────
+  // INIT
+  //────────────────────────────
 
   useEffect(() => {
+    let mounted = true
 
-    supabase.auth.getSession().then(({ data }) => {
+    async function init() {
+      try {
+        //--------------------------------
+        // TELEGRAM
+        //--------------------------------
 
-      if (data.session) {
-        setView("app")
-        loadEntries()
+        if (isTelegram && window.Telegram?.WebApp) {
+          initTelegram()
 
-        const completed = localStorage.getItem("thrive-onboarding")
-        if (!completed) setShowOnboarding(true)
+          window.Telegram.WebApp.ready()
+          window.Telegram.WebApp.expand()
 
-        const premium = localStorage.getItem("thrive-premium")
-        if (premium === "true") setIsPremium(true)
+          console.log("Telegram Mini App")
+          console.log(telegramUser)
+
+          /**
+           * Следующий этап:
+           *
+           * POST /telegram/auth
+           *
+           * backend:
+           * validate initData
+           * create/get user
+           * return Supabase Session
+           *
+           * await supabase.auth.setSession(...)
+           *
+           */
+        }
+
+        //--------------------------------
+        // WEB SESSION
+        //--------------------------------
+
+        const { data } =
+          await supabase.auth.getSession()
+
+        if (!mounted) return
+
+        const sessionUser = data?.session?.user
+
+        if (sessionUser) {
+          setUser(sessionUser)
+
+          await loadEntries(sessionUser)
+
+          const onboarding =
+            localStorage.getItem(
+              "thrive-onboarding"
+            )
+
+          if (!onboarding) {
+            setShowOnboarding(true)
+          }
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        if (mounted) {
+          setLoading(false)
+        }
       }
+    }
 
-    })
+    init()
 
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    //--------------------------------
+    // AUTH LISTENER
+    //--------------------------------
 
-      if (session) {
-        setView("app")
-        loadEntries()
-      } else {
-        setView("auth")
-      }
+    const { data: listener } =
+      supabase.auth.onAuthStateChange(
+        async (_event, session) => {
+          const sessionUser =
+            session?.user ?? null
 
-    })
+          if (sessionUser) {
+            setUser(sessionUser)
 
-    return () => data.subscription.unsubscribe()
+            await loadEntries(sessionUser)
+          } else {
+            setUser(null)
+            setEntries([])
+            setShowOnboarding(false)
+          }
+        }
+      )
 
-  }, [])
-  async function loadEntries() {
+    return () => {
+      mounted = false
+      listener.subscription.unsubscribe()
+    }
+  }, [isTelegram])
 
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData?.user) return
-
-    const { data } = await supabase
-      .from("entries")
-      .select("*")
-      .eq("user_id", userData.user.id)
-      .order("created_at", { ascending: false })
-
-    setEntries(data || [])
-  }
-
-  async function addEntry() {
-
-    const value = Number(energy)
-
-    if (!activity || value < 1 || value > 10) return
-
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData?.user) return
-
-    await supabase.from("entries").insert({
-      user_id: userData.user.id,
-      activity,
-      notes,
-      energy: value,
-      category,
-      mood,
-      date: new Date().toISOString().split("T")[0],
-    })
-
-    setActivity("")
-    setNotes("")
-    setEnergy("")
-
-    loadEntries()
-  }
+  //────────────────────────────
+  // LOGOUT
+  //────────────────────────────
 
   async function logout() {
     await supabase.auth.signOut()
-    setView("landing")
-  }
 
-  function completeOnboarding() {
-    localStorage.setItem("thrive-onboarding", "true")
+    setUser(null)
+    setEntries([])
     setShowOnboarding(false)
   }
 
-  // ROUTES
-  if (view === "landing") return <Landing setView={setView} />
+  //────────────────────────────
+  // ONBOARDING
+  //────────────────────────────
 
-  if (view === "auth")
-    return (
-      <Auth
-        mode={mode}
-        setMode={setMode}
-        signIn={async (email, password) =>
-          supabase.auth.signInWithPassword({ email, password })
-        }
-        signUp={async (name, email, password) =>
-          supabase.auth.signUp({
-            email,
-            password,
-            options: { data: { name } },
-          })
-        }
-      />
+  function completeOnboarding() {
+    localStorage.setItem(
+      "thrive-onboarding",
+      "true"
     )
 
-  if (showOnboarding)
-    return <Onboarding completeOnboarding={completeOnboarding} />
+    setShowOnboarding(false)
+  }
+
+  //────────────────────────────
+  // LOADING
+  //────────────────────────────
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FBFAF8]">
+        <div className="text-black/40">
+          Loading...
+        </div>
+      </div>
+    )
+  }
+
+  //────────────────────────────
+  // WEB AUTH
+  //────────────────────────────
+
+  if (!user && !isTelegram) {
+    return <Auth />
+  }
+
+  //────────────────────────────
+  // TELEGRAM WAIT
+  //────────────────────────────
+
+  if (!user && isTelegram) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FBFAF8]">
+        <div className="text-center">
+
+          <div className="text-3xl font-semibold">
+            Thrive
+          </div>
+
+          <div className="mt-4 text-black/40">
+            Connecting Telegram...
+          </div>
+
+        </div>
+      </div>
+    )
+  }
+
+  //────────────────────────────
+  // ONBOARDING
+  //────────────────────────────
+
+  if (showOnboarding) {
+    return (
+      <Onboarding
+        completeOnboarding={completeOnboarding}
+      />
+    )
+  }
+
+  //────────────────────────────
+  // MAIN APP
+  //────────────────────────────
 
   return (
     <div className="relative min-h-screen bg-[#FBFAF8] overflow-hidden">
 
-      {/* BACKGROUND */}
+      {/* Background */}
+
       <div className="absolute inset-0 pointer-events-none">
+
         <div className="absolute top-[-300px] right-[-300px] w-[800px] h-[800px] bg-[#6A1E2B]/10 blur-[160px] rounded-full" />
+
         <div className="absolute bottom-[-300px] left-[-250px] w-[700px] h-[700px] bg-black/5 blur-[180px] rounded-full" />
+
       </div>
 
-      {/* GRID */}
       <div
         className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
@@ -148,43 +265,43 @@ export default function App() {
         }}
       />
 
-      {/* DESKTOP LAYOUT */}
+      {/* Desktop */}
+
       <div className="hidden md:flex relative z-10 min-h-screen">
-        <Sidebar entries={entries} logout={logout} />
-        <Dashboard
-          entries={entries}
-          activity={activity}
-          setActivity={setActivity}
-          notes={notes}
-          setNotes={setNotes}
-          energy={energy}
-          setEnergy={setEnergy}
-          category={category}
-          setCategory={setCategory}
-          mood={mood}
-          setMood={setMood}
-          addEntry={addEntry}
+
+        <Sidebar
+          entries={safeEntries}
+          logout={logout}
         />
+
+        <Dashboard
+          user={user}
+          entries={safeEntries}
+          weeklyData={safeWeeklyData}
+          stats={safeStats}
+          addEntry={addEntry}
+          deleteEntry={deleteEntry}
+        />
+
       </div>
 
-      {/* MOBILE LAYOUT */}
+      {/* Mobile */}
+
       <div className="md:hidden relative z-10">
+
         <Dashboard
-          entries={entries}
-          activity={activity}
-          setActivity={setActivity}
-          notes={notes}
-          setNotes={setNotes}
-          energy={energy}
-          setEnergy={setEnergy}
-          category={category}
-          setCategory={setCategory}
-          mood={mood}
-          setMood={setMood}
+          user={user}
+          entries={safeEntries}
+          weeklyData={safeWeeklyData}
+          stats={safeStats}
           addEntry={addEntry}
+          deleteEntry={deleteEntry}
         />
 
-        <MobileNav logout={logout} />
+        <MobileNav
+          logout={logout}
+        />
+
       </div>
 
     </div>
