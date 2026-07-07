@@ -6,20 +6,39 @@ export function useTelegram() {
   const [initData, setInitData] = useState("");
 
   useEffect(() => {
-    if (!window.Telegram?.WebApp) return;
+    let tries = 0;
 
-    const tg = window.Telegram.WebApp;
+    const timer = setInterval(() => {
+      const tg = window.Telegram?.WebApp;
 
-    tg.ready();
-    tg.expand();
+      if (!tg) {
+        tries++;
 
-    setIsTelegram(true);
+        if (tries > 20) {
+          clearInterval(timer);
+        }
 
-    setInitData(tg.initData);
+        return;
+      }
 
-    if (tg.initDataUnsafe?.user) {
-      setTelegramUser(tg.initDataUnsafe.user);
-    }
+      clearInterval(timer);
+
+      tg.ready();
+      tg.expand();
+
+      console.log("Telegram WebApp detected");
+      console.log(tg);
+
+      setIsTelegram(true);
+
+      setInitData(tg.initData || "");
+
+      if (tg.initDataUnsafe?.user) {
+        setTelegramUser(tg.initDataUnsafe.user);
+      }
+    }, 200);
+
+    return () => clearInterval(timer);
   }, []);
 
   return {
