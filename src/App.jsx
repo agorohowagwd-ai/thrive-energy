@@ -1,187 +1,121 @@
-import { useEffect, useState } from "react"
-import { supabase } from "./supabase"
+import { useState, useEffect, useMemo } from "react";
 
-import Auth from "./components/Auth"
-import Sidebar from "./components/Sidebar"
-import Dashboard from "./components/Dashboard"
-import Onboarding from "./components/Onboarding"
-import MobileNav from "./components/MobileNav"
+import Sidebar from "./components/Sidebar";
+import Dashboard from "./components/Dashboard";
+import Onboarding from "./components/Onboarding";
+import MobileNav from "./components/MobileNav";
 
-import useAppState from "./state/useAppState"
-import { buildDashboardData } from "./lib/energyEngine"
+import useAppState from "./state/useAppState";
+import { buildDashboardData } from "./lib/energyEngine";
 
-import { initTelegram } from "./telegram/telegram"
-import { useTelegram } from "./telegram/useTelegram"
+import { useTelegram } from "./telegram/useTelegram";
 
 export default function App() {
+  console.log("APP IS RUNNING");
+
   //────────────────────────────
   // TELEGRAM
   //────────────────────────────
 
-  const { isTelegram, telegramUser } = useTelegram()
+  const { telegramUser, isTelegram, initData } = useTelegram();
+
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  //────────────────────────────
+  // AUTH
+  //────────────────────────────
+
+  useEffect(() => {
+    async function authenticate() {
+      if (!isTelegram || !initData) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          import.meta.env.VITE_API_URL + "/telegram/auth",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              initData,
+            }),
+          }
+        );
+
+        const data = await res.json();
+
+        console.log("Telegram auth response:", data);
+
+        if (data.user) {
+          setUser(data.user);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+
+      setLoading(false);
+    }
+
+    authenticate();
+  }, [isTelegram, initData]);
 
   //────────────────────────────
   // APP STATE
   //────────────────────────────
 
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [showOnboarding, setShowOnboarding] = useState(false)
-
-  //────────────────────────────
-  // DATA
-  //────────────────────────────
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const {
     entries,
-    setEntries,
-    loadEntries,
     addEntry,
     deleteEntry,
-  } = useAppState(user)
+    loadEntries,
+  } = useAppState(user);
 
-  const safeEntries = Array.isArray(entries) ? entries : []
+  const safeEntries = Array.isArray(entries)
+    ? entries
+    : [];
 
-  //────────────────────────────
-  // AI ENGINE
-  //────────────────────────────
-
-  const {
-    weeklyData,
-    stats,
-  } = buildDashboardData(safeEntries)
-
-  const safeWeeklyData = Array.isArray(weeklyData)
-    ? weeklyData
-    : []
-
-  const safeStats = stats ?? null
+  const { weeklyData, stats } = useMemo(
+    () => buildDashboardData(safeEntries),
+    [safeEntries]
+  );
 
   //────────────────────────────
-  // INIT
+  // LOAD ENTRIES
   //────────────────────────────
 
   useEffect(() => {
-    let mounted = true
+    if (!user?.telegram_id) return;
 
-    async function init() {
-      try {
-        //--------------------------------
-        // TELEGRAM
-        //--------------------------------
-
-        if (isTelegram && window.Telegram?.WebApp) {
-          initTelegram()
-
-          window.Telegram.WebApp.ready()
-          window.Telegram.WebApp.expand()
-
-          console.log("Telegram Mini App")
-          console.log(telegramUser)
-
-          /**
-           * Следующий этап:
-           *
-           * POST /telegram/auth
-           *
-           * backend:
-           * validate initData
-           * create/get user
-           * return Supabase Session
-           *
-           * await supabase.auth.setSession(...)
-           *
-           */
-        }
-
-        //--------------------------------
-        // WEB SESSION
-        //--------------------------------
-
-        const { data } =
-          await supabase.auth.getSession()
-
-        if (!mounted) return
-
-        const sessionUser = data?.session?.user
-
-        if (sessionUser) {
-          setUser(sessionUser)
-
-          await loadEntries(sessionUser)
-
-          const onboarding =
-            localStorage.getItem(
-              "thrive-onboarding"
-            )
-
-          if (!onboarding) {
-            setShowOnboarding(true)
-          }
-        }
-      } catch (err) {
-        console.error(err)
-      } finally {
-        if (mounted) {
-          setLoading(false)
-        }
-      }
-    }
-
-    init()
-
-    //--------------------------------
-    // AUTH LISTENER
-    //--------------------------------
-
-    const { data: listener } =
-      supabase.auth.onAuthStateChange(
-        async (_event, session) => {
-          const sessionUser =
-            session?.user ?? null
-
-          if (sessionUser) {
-            setUser(sessionUser)
-
-            await loadEntries(sessionUser)
-          } else {
-            setUser(null)
-            setEntries([])
-            setShowOnboarding(false)
-          }
-        }
-      )
-
-    return () => {
-      mounted = false
-      listener.subscription.unsubscribe()
-    }
-  }, [isTelegram])
-
-  //────────────────────────────
-  // LOGOUT
-  //────────────────────────────
-
-  async function logout() {
-    await supabase.auth.signOut()
-
-    setUser(null)
-    setEntries([])
-    setShowOnboarding(false)
-  }
+    loadEntries();
+  }, [user?.telegram_id]);
 
   //────────────────────────────
   // ONBOARDING
   //────────────────────────────
 
-  function completeOnboarding() {
-    localStorage.setItem(
-      "thrive-onboarding",
-      "true"
-    )
+  useEffect(() => {
+    if (!user) return;
 
-    setShowOnboarding(false)
-  }
+    if (isTelegram) {
+      setShowOnboarding(false);
+      return;
+    }
+
+    const done = localStorage.getItem(
+      "thrive-onboarding"
+    );
+
+    if (!done) {
+      setShowOnboarding(true);
+    }
+  }, [user, isTelegram]);
 
   //────────────────────────────
   // LOADING
@@ -191,40 +125,38 @@ export default function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FBFAF8]">
         <div className="text-black/40">
-          Loading...
+          Loading Thrive...
         </div>
       </div>
-    )
+    );
   }
 
   //────────────────────────────
-  // WEB AUTH
+  // NOT INSIDE TELEGRAM
   //────────────────────────────
 
-  if (!user && !isTelegram) {
-    return <Auth />
-  }
-
-  //────────────────────────────
-  // TELEGRAM WAIT
-  //────────────────────────────
-
-  if (!user && isTelegram) {
+  if (!isTelegram) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FBFAF8]">
-        <div className="text-center">
-
-          <div className="text-3xl font-semibold">
-            Thrive
-          </div>
-
-          <div className="mt-4 text-black/40">
-            Connecting Telegram...
-          </div>
-
+        <div className="text-black/40 text-center">
+          Open this application inside Telegram.
         </div>
       </div>
-    )
+    );
+  }
+
+  //────────────────────────────
+  // AUTH FAILED
+  //────────────────────────────
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FBFAF8]">
+        <div className="text-black/40 text-center">
+          Telegram authorization failed.
+        </div>
+      </div>
+    );
   }
 
   //────────────────────────────
@@ -234,26 +166,27 @@ export default function App() {
   if (showOnboarding) {
     return (
       <Onboarding
-        completeOnboarding={completeOnboarding}
+        completeOnboarding={() => {
+          localStorage.setItem(
+            "thrive-onboarding",
+            "true"
+          );
+          setShowOnboarding(false);
+        }}
       />
-    )
+    );
   }
 
   //────────────────────────────
-  // MAIN APP
+  // APP
   //────────────────────────────
 
   return (
     <div className="relative min-h-screen bg-[#FBFAF8] overflow-hidden">
 
-      {/* Background */}
-
       <div className="absolute inset-0 pointer-events-none">
-
         <div className="absolute top-[-300px] right-[-300px] w-[800px] h-[800px] bg-[#6A1E2B]/10 blur-[160px] rounded-full" />
-
         <div className="absolute bottom-[-300px] left-[-250px] w-[700px] h-[700px] bg-black/5 blur-[180px] rounded-full" />
-
       </div>
 
       <div
@@ -265,45 +198,36 @@ export default function App() {
         }}
       />
 
-      {/* Desktop */}
-
       <div className="hidden md:flex relative z-10 min-h-screen">
 
-        <Sidebar
-          entries={safeEntries}
-          logout={logout}
-        />
+        <Sidebar entries={safeEntries} />
 
         <Dashboard
           user={user}
           entries={safeEntries}
-          weeklyData={safeWeeklyData}
-          stats={safeStats}
+          weeklyData={weeklyData}
+          stats={stats}
           addEntry={addEntry}
           deleteEntry={deleteEntry}
         />
 
       </div>
-
-      {/* Mobile */}
 
       <div className="md:hidden relative z-10">
 
         <Dashboard
           user={user}
           entries={safeEntries}
-          weeklyData={safeWeeklyData}
-          stats={safeStats}
+          weeklyData={weeklyData}
+          stats={stats}
           addEntry={addEntry}
           deleteEntry={deleteEntry}
         />
 
-        <MobileNav
-          logout={logout}
-        />
+        <MobileNav />
 
       </div>
 
     </div>
-  )
+  );
 }

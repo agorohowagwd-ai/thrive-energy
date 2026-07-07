@@ -1,29 +1,30 @@
-import { useEffect, useState } from "react"
-
-import {
-  initTelegram,
-  getTelegramUser,
-} from "./telegram"
+import { useEffect, useState } from "react";
 
 export function useTelegram() {
-  const [telegramUser, setTelegramUser] =
-    useState(null)
-
-  const [isTelegram, setIsTelegram] =
-    useState(false)
+  const [telegramUser, setTelegramUser] = useState(null);
+  const [isTelegram, setIsTelegram] = useState(false);
+  const [initData, setInitData] = useState("");
 
   useEffect(() => {
-    if (!window.Telegram?.WebApp) return
+    if (!window.Telegram?.WebApp) return;
 
-    initTelegram()
+    const tg = window.Telegram.WebApp;
 
-    setIsTelegram(true)
+    tg.ready();
+    tg.expand();
 
-    setTelegramUser(getTelegramUser())
-  }, [])
+    setIsTelegram(true);
+
+    setInitData(tg.initData);
+
+    if (tg.initDataUnsafe?.user) {
+      setTelegramUser(tg.initDataUnsafe.user);
+    }
+  }, []);
 
   return {
     telegramUser,
     isTelegram,
-  }
+    initData,
+  };
 }

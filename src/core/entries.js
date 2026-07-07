@@ -18,11 +18,11 @@ export async function getEntries(userId) {
     return []
   }
 
-  return data
+  return data || []
 }
 
 //────────────────────────────
-// ADD ENTRY
+// CREATE ENTRY
 //────────────────────────────
 
 export async function createEntry(userId, entry) {
@@ -50,7 +50,7 @@ export async function removeEntry(id) {
     .eq("id", id)
 
   if (error) {
-    console.error("deleteEntry error:", error)
+    console.error("removeEntry error:", error)
     return false
   }
 
