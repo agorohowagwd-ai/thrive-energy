@@ -34,24 +34,21 @@ export default function App() {
       }
 
       try {
-        const res = await fetch(
-          import.meta.env.VITE_API_URL + "/telegram/auth",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              initData,
-            }),
-          }
-        );
+        const res = await fetch("/api/telegram-auth", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            initData,
+          }),
+        });
 
         const data = await res.json();
 
         console.log("Telegram auth response:", data);
 
-        if (data.user) {
+        if (data.success && data.user) {
           setUser(data.user);
         }
       } catch (err) {
