@@ -43,6 +43,7 @@ function verifyTelegram(initData) {
 //────────────────────────────
 
 router.post("/auth", async (req, res) => {
+  console.log("TELEGRAM ROUTE VERSION 2");
   try {
     const { initData } = req.body;
 
