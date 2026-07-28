@@ -92,7 +92,7 @@ router.post("/auth", async (req, res) => {
     //----------------------------------
 
     const payload = {
-      telegram_id: String(tgUser.id),
+      telegram_id: tgUser.id,
       username: tgUser.username ?? null,
       first_name: tgUser.first_name ?? "",
       last_name: tgUser.last_name ?? "",
