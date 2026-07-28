@@ -29,9 +29,11 @@ function verifyTelegram(initData, botToken) {
     return false;
   }
 
+
   const params = new URLSearchParams(initData);
 
   const hash = params.get("hash");
+
 
   if (!hash) {
     console.error("❌ Telegram hash missing");
@@ -48,10 +50,12 @@ function verifyTelegram(initData, botToken) {
     .join("\n");
 
 
+
   const secret = crypto
     .createHmac("sha256", "WebAppData")
     .update(botToken)
     .digest();
+
 
 
   const computedHash = crypto
@@ -60,12 +64,15 @@ function verifyTelegram(initData, botToken) {
     .digest("hex");
 
 
+
   console.log("Telegram hash:", hash);
   console.log("Computed hash:", computedHash);
 
 
+
   return computedHash === hash;
 }
+
 
 
 //────────────────────────────
@@ -76,26 +83,42 @@ export default async function handler(req, res) {
 
 
   if (req.method !== "POST") {
+
     return res.status(405).json({
       success: false,
       error: "Method not allowed",
     });
+
   }
+
 
 
   try {
 
+
     console.log("========== TELEGRAM AUTH ==========");
 
 
-    const { initData } = req.body;
+
+    const initData = req.body?.initData;
+
+
+
+    console.log(
+      "InitData exists:",
+      Boolean(initData)
+    );
+
 
 
     if (!initData) {
 
       return res.status(400).json({
+
         success: false,
+
         error: "Missing initData",
+
       });
 
     }
@@ -113,15 +136,21 @@ export default async function handler(req, res) {
     );
 
 
-    console.log("Telegram valid:", valid);
+    console.log(
+      "Telegram valid:",
+      valid
+    );
 
 
 
     if (!valid) {
 
       return res.status(401).json({
+
         success: false,
+
         error: "Invalid Telegram signature",
+
       });
 
     }
@@ -135,14 +164,19 @@ export default async function handler(req, res) {
 
     const params = new URLSearchParams(initData);
 
+
     const userString = params.get("user");
+
 
 
     if (!userString) {
 
       return res.status(400).json({
+
         success: false,
+
         error: "Telegram user not found",
+
       });
 
     }
@@ -152,39 +186,70 @@ export default async function handler(req, res) {
     const tgUser = JSON.parse(userString);
 
 
-    console.log("Telegram user:", tgUser);
+
+    console.log(
+      "Telegram user:",
+      tgUser
+    );
 
 
 
     //────────────────────────────
-    // UPSERT APP USER
+    // PREPARE USER
     //────────────────────────────
 
 
     const payload = {
 
-      telegram_id: String(tgUser.id),
 
-      username: tgUser.username ?? null,
+      // ВАЖНО:
+      // Supabase column = bigint
+      telegram_id: tgUser.id,
 
-      first_name: tgUser.first_name ?? "",
 
-      last_name: tgUser.last_name ?? "",
+      username:
+        tgUser.username ?? null,
 
-      photo_url: tgUser.photo_url ?? null,
 
-      language_code: tgUser.language_code ?? "ru",
+      first_name:
+        tgUser.first_name ?? "",
 
-      updated_at: new Date().toISOString(),
+
+      last_name:
+        tgUser.last_name ?? "",
+
+
+      photo_url:
+        tgUser.photo_url ?? null,
+
+
+      language_code:
+        tgUser.language_code ?? "ru",
+
+
+      updated_at:
+        new Date().toISOString(),
 
     };
 
 
-    console.log("Saving user:", payload);
+
+    console.log(
+      "Saving user:",
+      payload
+    );
 
 
 
-    const { data, error } = await supabaseAdmin
+    //────────────────────────────
+    // UPSERT USER
+    //────────────────────────────
+
+
+    const {
+      data,
+      error
+    } = await supabaseAdmin
 
       .from("app_users")
 
@@ -203,6 +268,7 @@ export default async function handler(req, res) {
 
     if (error) {
 
+
       console.error(
         "❌ Supabase upsert error:",
         error
@@ -217,11 +283,16 @@ export default async function handler(req, res) {
 
       });
 
+
     }
 
 
 
-    console.log("✅ AUTH SUCCESS");
+    console.log(
+      "✅ AUTH SUCCESS",
+      data
+    );
+
 
 
     return res.status(200).json({
@@ -241,6 +312,7 @@ export default async function handler(req, res) {
       "🔥 Telegram auth error:",
       err
     );
+
 
 
     return res.status(500).json({
