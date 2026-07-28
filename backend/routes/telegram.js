@@ -14,7 +14,7 @@ function verifyTelegram(initData) {
   const hash = params.get("hash");
 
   if (!hash) {
-    console.log("❌ Hash missing");
+    console.log("Hash is missing.");
     return false;
   }
 
@@ -35,9 +35,6 @@ function verifyTelegram(initData) {
     .update(dataCheckString)
     .digest("hex");
 
-  console.log("Telegram hash:", hash);
-  console.log("Computed hash:", computedHash);
-
   return computedHash === hash;
 }
 
@@ -47,11 +44,11 @@ function verifyTelegram(initData) {
 
 router.post("/auth", async (req, res) => {
   try {
-    console.log("========== NEW AUTH REQUEST ==========");
-
     const { initData } = req.body;
 
-    console.log("InitData received:", !!initData);
+    //----------------------------------
+    // CHECK INIT DATA
+    //----------------------------------
 
     if (!initData) {
       return res.status(400).json({
@@ -61,14 +58,12 @@ router.post("/auth", async (req, res) => {
     }
 
     //----------------------------------
-    // VERIFY
+    // VERIFY SIGNATURE
     //----------------------------------
 
-    const valid = verifyTelegram(initData);
+    const isValid = verifyTelegram(initData);
 
-    console.log("Signature valid:", valid);
-
-    if (!valid) {
+    if (!isValid) {
       return res.status(401).json({
         success: false,
         error: "Invalid Telegram signature",
@@ -76,46 +71,51 @@ router.post("/auth", async (req, res) => {
     }
 
     //----------------------------------
-    // USER
+    // GET TELEGRAM USER
     //----------------------------------
 
     const params = new URLSearchParams(initData);
 
     const userString = params.get("user");
 
-    console.log("User string:", userString);
+    if (!userString) {
+      return res.status(400).json({
+        success: false,
+        error: "Telegram user not found",
+      });
+    }
 
     const tgUser = JSON.parse(userString);
 
-    console.log("Telegram user:", tgUser);
+    //----------------------------------
+    // USER DATA FOR SUPABASE
+    //----------------------------------
+
+    const payload = {
+      telegram_id: String(tgUser.id),
+      username: tgUser.username ?? null,
+      first_name: tgUser.first_name ?? "",
+      last_name: tgUser.last_name ?? "",
+      photo_url: tgUser.photo_url ?? null,
+      language_code: tgUser.language_code ?? "ru",
+      updated_at: new Date().toISOString(),
+    };
 
     //----------------------------------
     // UPSERT USER
     //----------------------------------
 
     const { data, error } = await supabaseAdmin
-      .from("users")
-      .upsert(
-        {
-          telegram_id: tgUser.id,
-          username: tgUser.username ?? null,
-          first_name: tgUser.first_name ?? "",
-          last_name: tgUser.last_name ?? "",
-          photo_url: tgUser.photo_url ?? null,
-          language_code: tgUser.language_code ?? "en",
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "telegram_id",
-        }
-      )
+      .from("app_users")
+      .upsert(payload, {
+        onConflict: "telegram_id",
+      })
       .select()
       .single();
 
-    console.log("Supabase data:", data);
-    console.log("Supabase error:", error);
-
     if (error) {
+      console.error("Supabase upsert error:", error);
+
       return res.status(500).json({
         success: false,
         error: error.message,
@@ -126,20 +126,16 @@ router.post("/auth", async (req, res) => {
     // SUCCESS
     //----------------------------------
 
-    console.log("✅ AUTH SUCCESS");
-
     return res.json({
       success: true,
       user: data,
     });
   } catch (err) {
-    console.error("🔥 AUTH ERROR");
-    console.error(err);
+    console.error("Telegram auth error:", err);
 
     return res.status(500).json({
       success: false,
       error: err.message,
-      stack: err.stack,
     });
   }
 });
