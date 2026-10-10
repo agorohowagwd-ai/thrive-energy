@@ -1,442 +1,222 @@
 import { useMemo } from "react"
 
 export default function Sidebar({
-entries,
-logout,
+  entries,
+  logout,
 }) {
 
-const grouped = useMemo(() => {
-const map = {}
+  const grouped = useMemo(() => {
+    const map = {}
 
-entries.forEach((entry) => {
-  if (!map[entry.date]) {
-    map[entry.date] = []
-  }
+    entries.forEach((entry) => {
+      if (!map[entry.date]) {
+        map[entry.date] = []
+      }
 
-  map[entry.date].push(entry)
-})
+      map[entry.date].push(entry)
+    })
 
-return Object.entries(map).sort(
-  (a, b) =>
-    new Date(b[0]) -
-    new Date(a[0])
-)
+    return Object.entries(map).sort(
+      (a, b) =>
+        new Date(b[0]) -
+        new Date(a[0])
+    )
+  }, [entries])
 
-}, [entries])
+  const average =
+    entries.length > 0
+      ? (
+          entries.reduce(
+            (s, e) =>
+              s + e.energy,
+            0
+          ) / entries.length
+        ).toFixed(1)
+      : "0"
 
-const average =
-entries.length > 0
-? (
-entries.reduce(
-(s, e) =>
-s + e.energy,
-0
-) / entries.length
-).toFixed(1)
-: "0"
+  const streak = grouped.length
 
-const streak = grouped.length
+  return (
+    <aside className="w-[340px] shrink-0 min-h-screen flex flex-col bg-obsidian text-paper">
 
-return (
-<aside
-className="
-w-[380px]
-min-h-screen
-flex
-flex-col
+      {/* LOGO */}
 
-  bg-gradient-to-b
-  from-[#4b1117]
-  via-[#611a21]
-  to-[#3d0d13]
+      <div className="px-8 h-[66px] flex items-center justify-between border-b border-white/20">
 
-  text-white
+        <span className="text-[18px] font-semibold uppercase">
+          EnergyOS
+        </span>
 
-  backdrop-blur-3xl
-  border-r
-  border-white/10
-  "
->
+        <span className="eyebrow !text-ash">
+          Personal energy system
+        </span>
 
-  {/* LOGO */}
-
-  <div
-    className="
-    px-8
-    pt-8
-    pb-6
-    border-b
-    border-white/10
-    "
-  >
-    <div
-      className="
-      text-[11px]
-      uppercase
-      tracking-[0.35em]
-      text-white/50
-      "
-    >
-      PERSONAL ENERGY SYSTEM
-    </div>
-
-    <h1
-      className="
-      mt-3
-      text-3xl
-      font-semibold
-      tracking-tight
-      "
-    >
-      EnergyOS
-    </h1>
-  </div>
-
-  {/* SCORE */}
-
-  <div className="p-6">
-
-    <div
-      className="
-      rounded-[34px]
-      bg-white/[0.08]
-      backdrop-blur-3xl
-      border
-      border-white/10
-      p-6
-
-      transition-all
-      duration-500
-
-      hover:bg-white/[0.12]
-      hover:border-white/20
-      "
-    >
-
-      <div
-        className="
-        text-xs
-        uppercase
-        tracking-[0.2em]
-        text-white/50
-        "
-      >
-        Energy Score
       </div>
 
-      <div
-        className="
-        text-6xl
-        font-semibold
-        mt-4
-        "
-      >
-        {average}
-      </div>
+      {/* SCORE */}
 
-      <div
-        className="
-        mt-2
-        text-sm
-        text-white/60
-        "
-      >
-        Personal index
-      </div>
+      <div className="px-8 pt-12 pb-10 border-b border-white/20">
 
-    </div>
-
-  </div>
-
-  {/* STATS */}
-
-  <div
-    className="
-    px-6
-    grid
-    grid-cols-2
-    gap-3
-    "
-  >
-
-    <div
-      className="
-      rounded-3xl
-      bg-white/[0.06]
-      border
-      border-white/10
-      p-4
-      "
-    >
-      <div className="text-white/50 text-xs">
-        Entries
-      </div>
-
-      <div className="text-2xl mt-2">
-        {entries.length}
-      </div>
-    </div>
-
-    <div
-      className="
-      rounded-3xl
-      bg-white/[0.06]
-      border
-      border-white/10
-      p-4
-      "
-    >
-      <div className="text-white/50 text-xs">
-        Streak
-      </div>
-
-      <div className="text-2xl mt-2">
-        {streak}
-      </div>
-    </div>
-
-  </div>
-
-  {/* NAVIGATION */}
-
-  <div className="px-6 mt-8">
-
-    <div
-      className="
-      text-[11px]
-      uppercase
-      tracking-[0.25em]
-      text-white/40
-      mb-4
-      "
-    >
-      Navigation
-    </div>
-
-    {[
-      "Dashboard",
-      "Analytics",
-      "Timeline",
-      "Insights",
-    ].map((item) => (
-
-      <div
-        key={item}
-        className="
-        px-5
-        py-4
-        rounded-2xl
-
-        text-white/75
-
-        transition-all
-        duration-300
-
-        hover:bg-white/10
-        hover:text-white
-        hover:translate-x-1
-
-        cursor-pointer
-        "
-      >
-        {item}
-      </div>
-
-    ))}
-
-  </div>
-
-  {/* TIMELINE */}
-
-  <div
-    className="
-    flex-1
-    overflow-y-auto
-    px-6
-    mt-8
-    "
-  >
-
-    <div
-      className="
-      text-[11px]
-      uppercase
-      tracking-[0.25em]
-      text-white/40
-      mb-4
-      "
-    >
-      Recent Activity
-    </div>
-
-    {grouped.slice(0, 7).map(
-      ([date, items]) => (
-
-        <div
-          key={date}
-          className="mb-6"
-        >
-
-          <div
-            className="
-            text-xs
-            text-white/35
-            mb-3
-            "
-          >
-            {date}
-          </div>
-
-          {items.slice(0, 2).map(
-            (item, i) => (
-
-              <div
-                key={i}
-                className="
-                rounded-2xl
-                bg-white/[0.05]
-                border
-                border-white/10
-
-                p-4
-                mb-2
-
-                transition-all
-                duration-300
-
-                hover:bg-white/[0.08]
-                hover:border-white/20
-                "
-              >
-
-                <div
-                  className="
-                  flex
-                  justify-between
-                  "
-                >
-                  <span>
-                    {item.activity}
-                  </span>
-
-                  <span className="text-white/50">
-                    {item.energy}
-                  </span>
-                </div>
-
-                <div
-                  className="
-                  mt-2
-                  text-xs
-                  text-white/40
-                  "
-                >
-                  {item.category}
-                </div>
-
-              </div>
-
-            )
-          )}
-
+        <div className="eyebrow !text-ash">
+          Energy Score
         </div>
 
-      )
-    )}
+        <div className="mt-6 text-[94px] font-light leading-[0.76]">
+          {average}
+        </div>
 
-  </div>
+        <div className="mt-6 text-[12px] text-ash">
+          Personal index
+        </div>
 
-  {/* PREMIUM */}
-
-  <div className="p-6">
-
-    <div
-      className="
-      rounded-[30px]
-
-      bg-gradient-to-br
-      from-white/10
-      to-white/5
-
-      border
-      border-white/10
-
-      p-5
-      "
-    >
-
-      <div
-        className="
-        text-xs
-        uppercase
-        tracking-[0.2em]
-        text-white/40
-        "
-      >
-        Premium
       </div>
 
-      <div
-        className="
-        mt-3
-        text-lg
-        font-medium
-        "
-      >
-        AI Energy Insights
+      {/* STATS */}
+
+      <div className="grid grid-cols-2 border-b border-white/20">
+
+        <div className="px-8 py-7 border-r border-white/20">
+          <div className="eyebrow !text-ash">
+            Entries
+          </div>
+
+          <div className="text-[39px] font-light mt-3 leading-none">
+            {entries.length}
+          </div>
+        </div>
+
+        <div className="px-8 py-7">
+          <div className="eyebrow !text-ash">
+            Streak
+          </div>
+
+          <div className="text-[39px] font-light mt-3 leading-none">
+            {streak}
+          </div>
+        </div>
+
       </div>
 
-      <div
-        className="
-        mt-2
-        text-sm
-        text-white/50
-        "
-      >
-        Forecast trends,
-        detect patterns
-        and discover your
-        peak performance.
+      {/* NAVIGATION */}
+
+      <nav className="px-8 pt-10">
+
+        <div className="eyebrow !text-ash mb-5">
+          Navigation
+        </div>
+
+        {[
+          "Dashboard",
+          "Analytics",
+          "Timeline",
+          "Insights",
+        ].map((item, i) => (
+
+          <div
+            key={item}
+            className="group flex items-baseline gap-4 py-2 cursor-pointer"
+          >
+            <span className="text-[11px] text-felt w-5">
+              0{i + 1}
+            </span>
+
+            <span className="text-[29px] font-light leading-[1.15] text-white/70 transition-all duration-800 ease-expo group-hover:text-white group-hover:translate-x-2">
+              {item}
+            </span>
+          </div>
+
+        ))}
+
+      </nav>
+
+      {/* TIMELINE */}
+
+      <div className="flex-1 overflow-y-auto px-8 mt-12">
+
+        <div className="eyebrow !text-ash mb-4">
+          Recent Activity
+        </div>
+
+        {grouped.slice(0, 7).map(
+          ([date, items]) => (
+
+            <div
+              key={date}
+              className="mb-6"
+            >
+
+              <div className="text-[11px] text-felt mb-1">
+                {date}
+              </div>
+
+              {items.slice(0, 2).map(
+                (item, i) => (
+
+                  <div
+                    key={i}
+                    className="py-3 border-b border-white/15"
+                  >
+
+                    <div className="flex justify-between text-[16px]">
+                      <span>
+                        {item.activity}
+                      </span>
+
+                      <span className="text-ash">
+                        {item.energy}
+                      </span>
+                    </div>
+
+                    <div className="mt-1 text-[11px] uppercase text-felt">
+                      {item.category}
+                    </div>
+
+                  </div>
+
+                )
+              )}
+
+            </div>
+
+          )
+        )}
+
       </div>
 
-    </div>
+      {/* PREMIUM */}
 
-  </div>
+      <div className="px-8 py-8 border-t border-white/20">
 
-  {/* LOGOUT */}
+        <div className="eyebrow !text-ash">
+          Premium
+        </div>
 
-  <div
-    className="
-    p-6
-    border-t
-    border-white/10
-    "
-  >
+        <div className="mt-3 text-[18px]">
+          AI Energy Insights
+        </div>
 
-    <button
-      onClick={logout}
-      className="
-      w-full
-      py-4
-      rounded-2xl
+        <div className="mt-2 text-[12px] leading-[1.58] text-ash">
+          Forecast trends,
+          detect patterns
+          and discover your
+          peak performance.
+        </div>
 
-      bg-white/10
-      border
-      border-white/10
+      </div>
 
-      transition-all
-      duration-300
+      {/* LOGOUT */}
 
-      hover:bg-white/15
-      hover:border-white/20
-      "
-    >
-      Logout
-    </button>
+      <div className="px-8 pb-8">
 
-  </div>
+        <button
+          onClick={logout}
+          className="pill pill-dark w-full"
+        >
+          Logout
+        </button>
 
-</aside>
+      </div>
 
-)
+    </aside>
+  )
 }

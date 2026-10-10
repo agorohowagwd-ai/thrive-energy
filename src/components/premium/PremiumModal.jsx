@@ -5,15 +5,17 @@ export default function PremiumModal({
     if (!open) return null
   
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
   
-        <div className="w-[90%] max-w-md rounded-[30px] bg-white p-8">
+        <div className="w-[90%] max-w-md bg-paper p-[34px] reveal">
+
+          <div className="eyebrow">Premium</div>
   
-          <h2 className="text-2xl font-semibold">
+          <h2 className="mt-4 text-[45px] font-light leading-[1.05]">
             Thrive Premium
           </h2>
   
-          <div className="mt-6 space-y-3 text-black/65">
+          <div className="mt-8 border-t border-obsidian text-[18px] [&>div]:py-3 [&>div]:border-b [&>div]:border-black/15">
   
             <div>✓ AI Coach</div>
   
@@ -28,14 +30,14 @@ export default function PremiumModal({
           </div>
   
           <button
-            className="mt-8 w-full rounded-xl bg-[#6A1E2B] py-3 text-white"
+            className="pill pill-active mt-10 w-full"
           >
             Coming Soon
           </button>
   
           <button
             onClick={onClose}
-            className="mt-3 w-full text-black/40"
+            className="mt-4 w-full text-[12px] uppercase text-felt hover:text-obsidian transition-colors"
           >
             Close
           </button>

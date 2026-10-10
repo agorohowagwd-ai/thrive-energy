@@ -120,8 +120,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FBFAF8]">
-        <div className="text-black/40">
+      <div className="iridescent min-h-screen flex items-center justify-center">
+        <div className="eyebrow !text-white">
           Loading Thrive...
         </div>
       </div>
@@ -134,8 +134,8 @@ export default function App() {
 
   if (!isTelegram) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FBFAF8]">
-        <div className="text-black/40 text-center">
+      <div className="iridescent min-h-screen flex items-center justify-center px-6">
+        <div className="text-white text-[29px] font-light leading-[1.15] text-center max-w-md">
           Open this application inside Telegram.
         </div>
       </div>
@@ -148,8 +148,8 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FBFAF8]">
-        <div className="text-black/40 text-center">
+      <div className="iridescent min-h-screen flex items-center justify-center px-6">
+        <div className="text-white text-[29px] font-light leading-[1.15] text-center max-w-md">
           Telegram authorization failed.
         </div>
       </div>
@@ -179,21 +179,7 @@ export default function App() {
   //────────────────────────────
 
   return (
-    <div className="relative min-h-screen bg-[#FBFAF8] overflow-hidden">
-
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-300px] right-[-300px] w-[800px] h-[800px] bg-[#6A1E2B]/10 blur-[160px] rounded-full" />
-        <div className="absolute bottom-[-300px] left-[-250px] w-[700px] h-[700px] bg-black/5 blur-[180px] rounded-full" />
-      </div>
-
-      <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(15,23,42,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,0.12) 1px, transparent 1px)",
-          backgroundSize: "42px 42px",
-        }}
-      />
+    <div className="relative min-h-screen bg-paper text-obsidian overflow-hidden">
 
       <div className="hidden md:flex relative z-10 min-h-screen">
 

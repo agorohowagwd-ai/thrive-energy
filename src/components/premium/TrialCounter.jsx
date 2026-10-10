@@ -10,7 +10,7 @@ export default function TrialCounter({ user }) {
   if (premium || !trialActive) return null
 
   return (
-    <div className="rounded-full bg-[#6A1E2B]/10 px-4 py-2 text-sm text-[#6A1E2B]">
+    <div className="pill pill-sm pointer-events-none">
       Trial • {trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""} left
     </div>
   )

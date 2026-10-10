@@ -34,54 +34,37 @@ export default function KPIGrid({ stats }) {
     ]
   
     return (
-      <div className="relative z-10 grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5 mb-10 md:mb-12">
-  
-        {cards.map((card) => (
+      <div className="grid grid-cols-2 xl:grid-cols-4 border-t border-obsidian">
+
+        {cards.map((card, i) => (
           <div
             key={card.label}
-            className="
+            className={`
               group
-              rounded-[24px]
-              md:rounded-[28px]
-              bg-white/60
-              backdrop-blur-2xl
-              border
-              border-black/5
-              p-5
-              md:p-6
-              transition-all
-              duration-500
-              hover:-translate-y-1
-              hover:border-[#6A1E2B]/20
-              hover:shadow-[0_25px_80px_rgba(106,30,43,0.12)]
-            "
+              py-8
+              pr-4
+              ${i % 2 === 1 ? "pl-5 border-l border-black/15" : ""}
+              ${i >= 2 ? "border-t xl:border-t-0 border-black/15" : ""}
+              ${i === 2 ? "xl:pl-5 xl:border-l" : ""}
+            `}
           >
             {/* LABEL */}
-            <div className="text-xs uppercase tracking-[0.3em] text-black/40">
+            <div className="eyebrow">
               {card.label}
             </div>
-  
+
             {/* VALUE */}
-            <div
-              className="
-                mt-4
-                text-3xl
-                md:text-4xl
-                font-semibold
-                transition-colors
-                group-hover:text-[#6A1E2B]
-              "
-            >
+            <div className="mt-6 text-[54px] md:text-[78px] font-light leading-[0.9] transition-transform duration-800 ease-expo group-hover:translate-x-1">
               {card.value}
             </div>
-  
+
             {/* SUBTITLE */}
-            <div className="text-sm text-black/40 mt-2">
+            <div className="text-[12px] text-felt mt-4">
               {card.subtitle}
             </div>
           </div>
         ))}
-  
+
       </div>
     )
   }

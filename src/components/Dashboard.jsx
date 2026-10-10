@@ -119,328 +119,390 @@ export default function Dashboard({
   //────────────────────────────
 
   return (
-    <main className="flex-1 min-h-screen px-5 md:px-10 xl:px-14 py-6 md:py-8 xl:py-10 overflow-x-hidden">
+    <main className="flex-1 min-w-0 min-h-screen overflow-x-hidden bg-paper">
 
-      {/* HEADER */}
+      {/* HERO */}
 
-      <div className="relative z-10">
+      <header className="iridescent relative min-h-[420px] md:min-h-[520px] flex flex-col justify-end text-paper">
 
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Dashboard
-        </h1>
+        <div className="absolute top-0 inset-x-0 h-[66px] px-5 md:px-10 flex items-center justify-between">
 
-        <p className="text-black/40 mt-2">
-          Track energy, detect patterns,
-          and unlock AI insights
-        </p>
+          <span className="eyebrow !text-white/80">
+            Thrive
+          </span>
 
-      </div>
-
-      {/* PREMIUM */}
-
-      <div className="mt-8">
-
-        <PremiumBanner
-          user={user}
-          onUpgrade={() =>
-            setShowPremium(true)
-          }
-        />
-
-      </div>
-
-      {/* KPI */}
-
-      <div className="relative z-10 mt-8">
-
-        <KPIGrid stats={stats} />
-
-      </div>
-
-      {/* AI */}
-
-      <div className="relative z-10 mt-8">
-
-        {subscription.locked ? (
-
-          <div className="rounded-[32px] bg-white/70 backdrop-blur-xl border border-black/5 p-10 text-center">
-
-            <div className="text-6xl">
-              🔒
-            </div>
-
-            <h2 className="mt-5 text-2xl font-semibold">
-
-              AI Coach is Premium
-
-            </h2>
-
-            <p className="mt-4 text-black/50">
-
-              Unlock personalized
-              recommendations,
-              weekly reports,
-              future predictions
-              and AI Memory.
-
-            </p>
-
-            <button
-              onClick={() =>
-                setShowPremium(true)
-              }
-              className="mt-8 rounded-xl bg-[#6A1E2B] px-7 py-3 text-white"
-            >
-
-              Upgrade
-
-            </button>
-
-          </div>
-
-        ) : stats ? (
-
-          <AICoachCard
-            entries={entries}
-            stats={stats}
-          />
-
-        ) : (
-
-          <div className="rounded-[32px] bg-white/70 border border-black/5 p-8 text-black/40">
-
-            Loading AI...
-
-          </div>
-
-        )}
-
-      </div>
-
-      {/* RANGE */}
-
-      <div className="mt-6 flex gap-2">
-
-        {["week", "month", "year"].map(
-          (r) => (
-
-            <button
-              key={r}
-              onClick={() =>
-                setRange(r)
-              }
-              className={`px-4 py-2 rounded-full transition ${
-                range === r
-                  ? "bg-[#6A1E2B] text-white"
-                  : "bg-white/60 border border-black/5"
-              }`}
-            >
-
-              {r.toUpperCase()}
-
-            </button>
-
-          )
-        )}
-
-      </div>
-
-      {/* CHART */}
-
-      <div className="mt-8">
-
-        <EnergyChart
-          weeklyData={weeklyData}
-          range={range}
-          peaks={peaks}
-          onPointClick={
-            handlePointClick
-          }
-        />
-
-      </div>
-
-      {/* GRID */}
-
-      <div className="mt-10 grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-8">
-
-        {/* FORM */}
-
-        <div className="rounded-[32px] bg-white/70 backdrop-blur-2xl border border-black/5 p-8">
-
-          <h2 className="text-xl font-semibold">
-            Log Energy
-          </h2>
-
-          <input
-            className="w-full mt-6 p-4 rounded-2xl bg-white/60 border"
-            placeholder="Activity"
-            value={activity}
-            onChange={(e) =>
-              setActivity(
-                e.target.value
-              )
-            }
-          />
-
-          <textarea
-            className="w-full mt-4 p-4 rounded-2xl bg-white/60 border h-28"
-            placeholder="Notes"
-            value={notes}
-            onChange={(e) =>
-              setNotes(
-                e.target.value
-              )
-            }
-          />
-
-          <input
-            className="w-full mt-4 p-4 rounded-2xl bg-white/60 border"
-            placeholder="Energy"
-            value={energy}
-            onChange={(e) =>
-              setEnergy(
-                e.target.value
-              )
-            }
-          />
-
-          <div className="mt-4 flex gap-2 flex-wrap">
-
-            {[
-              "Work",
-              "Health",
-              "Study",
-              "Social",
-            ].map((c) => (
-
-              <button
-                key={c}
-                onClick={() =>
-                  setCategory(c)
-                }
-                className={`px-4 py-2 rounded-full ${
-                  category === c
-                    ? "bg-[#6A1E2B] text-white"
-                    : "bg-white/60 border"
-                }`}
-              >
-
-                {c}
-
-              </button>
-
-            ))}
-
-          </div>
-
-          <div className="mt-4 flex gap-2">
-
-            {[
-              "🙂",
-              "😐",
-              "😃",
-              "⚡",
-            ].map((m) => (
-
-              <button
-                key={m}
-                onClick={() =>
-                  setMood(m)
-                }
-                className={`w-10 h-10 rounded-xl ${
-                  mood === m
-                    ? "bg-[#6A1E2B] text-white"
-                    : "border"
-                }`}
-              >
-
-                {m}
-
-              </button>
-
-            ))}
-
-          </div>
-
-          <button
-            onClick={addEntry}
-            className="w-full mt-6 py-4 rounded-2xl bg-[#6A1E2B] text-white"
-          >
-
-            Save Entry
-
-          </button>
+          <span className="eyebrow !text-white/80">
+            {new Date().toLocaleDateString()}
+          </span>
 
         </div>
 
-        {/* TIMELINE */}
+        <div className="relative px-5 md:px-10 pb-10 md:pb-14 reveal">
 
-        <div className="rounded-[32px] bg-white/70 backdrop-blur-2xl border border-black/5 p-8">
+          <h1 className="text-[64px] sm:text-[94px] xl:text-[150px] font-normal leading-[0.85]">
+            Dashboard
+          </h1>
 
-          <h2 className="text-xl font-semibold">
+          <p className="mt-6 max-w-md text-[18px] leading-[1.4] font-light text-white/85">
+            Track energy, detect patterns,
+            and unlock AI insights
+          </p>
 
-            Timeline
+        </div>
 
-          </h2>
+        {/* ROTATING BADGE */}
 
-          <div className="mt-6 space-y-4">
+        <svg
+          viewBox="0 0 100 100"
+          className="badge-spin hidden md:block absolute right-10 bottom-12 w-[110px] h-[110px] text-white"
+          aria-hidden="true"
+        >
+          <defs>
+            <path
+              id="badge-circle"
+              d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0"
+            />
+          </defs>
+          <text fontSize="9.5" fill="currentColor" letterSpacing="2">
+            <textPath href="#badge-circle">
+              TRACK · DETECT · UNLOCK · THRIVE ·
+            </textPath>
+          </text>
+        </svg>
 
-            {!sortedEntries.length && (
+      </header>
 
-              <div className="text-black/40">
+      <div className="max-w-page mx-auto px-5 md:px-10 xl:px-0">
 
-                No entries yet
+        {/* PREMIUM */}
+
+        <div className="mt-[46px]">
+
+          <PremiumBanner
+            user={user}
+            onUpgrade={() =>
+              setShowPremium(true)
+            }
+          />
+
+        </div>
+
+        {/* KPI */}
+
+        <div className="mt-[46px]">
+
+          <KPIGrid stats={stats} />
+
+        </div>
+
+      </div>
+
+      {/* AI — black band */}
+
+      <div className="mt-[46px] bg-obsidian text-paper">
+
+        <div className="max-w-page mx-auto px-5 md:px-10 xl:px-0 py-16 md:py-24">
+
+          {subscription.locked ? (
+
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-10">
+
+              <div className="max-w-xl">
+
+                <div className="eyebrow !text-ash">
+                  Locked
+                </div>
+
+                <h2 className="mt-5 text-[45px] md:text-[78px] font-light leading-[1.05]">
+
+                  AI Coach is Premium
+
+                </h2>
+
+                <p className="mt-6 text-[18px] leading-[1.58] text-ash">
+
+                  Unlock personalized
+                  recommendations,
+                  weekly reports,
+                  future predictions
+                  and AI Memory.
+
+                </p>
 
               </div>
 
-            )}
-
-            {sortedEntries.map((e) => (
-
-              <div
-                key={e.id}
-                id={`entry-${e.id}`}
+              <button
                 onClick={() =>
-                  setSelectedEntry(e)
+                  setShowPremium(true)
                 }
-                className={`p-5 rounded-2xl border cursor-pointer transition ${
-                  selectedEntry?.id ===
-                  e.id
-                    ? "border-[#6A1E2B] bg-[#6A1E2B]/5"
-                    : "bg-white/50 border-black/5"
+                className="pill pill-dark self-start md:self-end"
+              >
+
+                Upgrade
+
+              </button>
+
+            </div>
+
+          ) : stats ? (
+
+            <AICoachCard
+              entries={entries}
+              stats={stats}
+            />
+
+          ) : (
+
+            <div className="text-ash">
+
+              Loading AI...
+
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
+
+      <div className="max-w-page mx-auto px-5 md:px-10 xl:px-0 pb-24">
+
+        {/* RANGE */}
+
+        <div className="mt-16 flex gap-2">
+
+          {["week", "month", "year"].map(
+            (r) => (
+
+              <button
+                key={r}
+                onClick={() =>
+                  setRange(r)
+                }
+                className={`pill pill-sm ${
+                  range === r
+                    ? "pill-active"
+                    : ""
                 }`}
               >
 
-                <div className="flex justify-between">
+                {r.toUpperCase()}
 
-                  <div>
+              </button>
 
-                    <div className="font-medium">
+            )
+          )}
 
-                      {e.activity}
+        </div>
+
+        {/* CHART */}
+
+        <div className="mt-10">
+
+          <EnergyChart
+            weeklyData={weeklyData}
+            range={range}
+            peaks={peaks}
+            onPointClick={
+              handlePointClick
+            }
+          />
+
+        </div>
+
+        {/* GRID */}
+
+        <div className="mt-24 grid grid-cols-1 xl:grid-cols-[400px_1fr] gap-16 xl:gap-20">
+
+          {/* FORM */}
+
+          <div>
+
+            <div className="eyebrow">
+              01 — Log
+            </div>
+
+            <h2 className="mt-4 text-[45px] font-light leading-[1.15]">
+              Log Energy
+            </h2>
+
+            <input
+              className="field mt-8"
+              placeholder="Activity"
+              value={activity}
+              onChange={(e) =>
+                setActivity(
+                  e.target.value
+                )
+              }
+            />
+
+            <textarea
+              className="field mt-2 h-28 resize-none"
+              placeholder="Notes"
+              value={notes}
+              onChange={(e) =>
+                setNotes(
+                  e.target.value
+                )
+              }
+            />
+
+            <input
+              className="field mt-2"
+              placeholder="Energy"
+              value={energy}
+              onChange={(e) =>
+                setEnergy(
+                  e.target.value
+                )
+              }
+            />
+
+            <div className="mt-8 flex gap-2 flex-wrap">
+
+              {[
+                "Work",
+                "Health",
+                "Study",
+                "Social",
+              ].map((c) => (
+
+                <button
+                  key={c}
+                  onClick={() =>
+                    setCategory(c)
+                  }
+                  className={`pill pill-sm ${
+                    category === c
+                      ? "pill-active"
+                      : ""
+                  }`}
+                >
+
+                  {c}
+
+                </button>
+
+              ))}
+
+            </div>
+
+            <div className="mt-4 flex gap-2">
+
+              {[
+                "🙂",
+                "😐",
+                "😃",
+                "⚡",
+              ].map((m) => (
+
+                <button
+                  key={m}
+                  onClick={() =>
+                    setMood(m)
+                  }
+                  className={`w-12 h-12 rounded-pill border transition-colors duration-[400ms] ${
+                    mood === m
+                      ? "border-obsidian bg-obsidian"
+                      : "border-black/20 hover:border-obsidian"
+                  }`}
+                >
+
+                  {m}
+
+                </button>
+
+              ))}
+
+            </div>
+
+            <button
+              onClick={addEntry}
+              className="pill pill-active w-full mt-10"
+            >
+
+              Save Entry
+
+            </button>
+
+          </div>
+
+          {/* TIMELINE */}
+
+          <div>
+
+            <div className="eyebrow">
+              02 — History
+            </div>
+
+            <h2 className="mt-4 text-[45px] font-light leading-[1.15]">
+
+              Timeline
+
+            </h2>
+
+            <div className="mt-8 border-t border-obsidian">
+
+              {!sortedEntries.length && (
+
+                <div className="py-6 text-felt">
+
+                  No entries yet
+
+                </div>
+
+              )}
+
+              {sortedEntries.map((e) => (
+
+                <div
+                  key={e.id}
+                  id={`entry-${e.id}`}
+                  onClick={() =>
+                    setSelectedEntry(e)
+                  }
+                  className={`group py-5 border-b cursor-pointer transition-colors duration-800 ease-expo ${
+                    selectedEntry?.id ===
+                    e.id
+                      ? "border-obsidian bg-obsidian text-paper px-4 -mx-4"
+                      : "border-black/15"
+                  }`}
+                >
+
+                  <div className="flex justify-between items-baseline gap-6">
+
+                    <div>
+
+                      <div className="text-[18px] transition-transform duration-800 ease-expo group-hover:translate-x-2">
+
+                        {e.activity}
+
+                      </div>
+
+                      <div className={`mt-1 text-[11px] uppercase ${
+                        selectedEntry?.id === e.id ? "text-ash" : "text-felt"
+                      }`}>
+
+                        {e.category}
+
+                      </div>
 
                     </div>
 
-                    <div className="text-sm text-black/40">
+                    <div className="text-[39px] font-light leading-none">
 
-                      {e.category}
+                      {e.energy}
 
                     </div>
-
-                  </div>
-
-                  <div className="font-semibold">
-
-                    {e.energy}
 
                   </div>
 
                 </div>
 
-              </div>
+              ))}
 
-            ))}
+            </div>
 
           </div>
 

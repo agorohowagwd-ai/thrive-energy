@@ -11,50 +11,52 @@ export default function PremiumBanner({ user, onUpgrade }) {
   if (premium) return null
 
   return (
-    <div className="mb-8 rounded-[30px] border border-[#6A1E2B]/10 bg-gradient-to-r from-[#6A1E2B]/5 to-white p-6">
+    <div className="border-t border-b border-obsidian py-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+      <div>
 
       {trialActive ? (
         <>
-          <div className="text-xs uppercase tracking-[0.25em] text-[#6A1E2B]">
+          <div className="eyebrow flex items-center gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-amber" />
             Trial
           </div>
 
-          <h2 className="mt-2 text-2xl font-semibold">
+          <h2 className="mt-4 text-[29px] md:text-[39px] font-light leading-[1.1]">
             {trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""} remaining
           </h2>
 
-          <p className="mt-3 text-black/55">
+          <p className="mt-3 text-[16px] leading-[1.58] text-felt max-w-xl">
             Enjoy all Premium features during your free trial.
           </p>
         </>
       ) : (
         <>
-          <div className="text-xs uppercase tracking-[0.25em] text-[#6A1E2B]">
+          <div className="eyebrow flex items-center gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-amber" />
             Premium
           </div>
 
-          <h2 className="mt-2 text-2xl font-semibold">
+          <h2 className="mt-4 text-[29px] md:text-[39px] font-light leading-[1.1]">
             Your free trial has ended
           </h2>
 
-          <p className="mt-3 text-black/55">
+          <p className="mt-3 text-[16px] leading-[1.58] text-felt max-w-xl">
             Unlock AI Coach, Predictions, Calendar Analytics and Weekly Reports.
           </p>
         </>
       )}
 
-      <button
-        onClick={onUpgrade}
-        className="mt-6 rounded-xl bg-[#6A1E2B] px-6 py-3 text-white transition hover:opacity-90"
-      >
-        Upgrade
-      </button>
-
       {locked && (
-        <div className="mt-3 text-sm text-black/40">
+        <div className="mt-3 text-[12px] text-ash">
           AI features are currently locked.
         </div>
       )}
+      </div>
+
+      <button
+        onClick={onUpgrade}
+        className="pill self-start md:self-end shrink-0"
+      >
+        Upgrade
+      </button>
 
     </div>
   )

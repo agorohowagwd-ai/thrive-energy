@@ -38,54 +38,60 @@ export default function Onboarding({ completeOnboarding }) {
   const current = steps[step]
 
   return (
-    <div className="min-h-screen bg-[#FBFAF8] flex items-center justify-center relative overflow-hidden">
+    <div className="iridescent min-h-screen flex flex-col text-paper">
 
-      {/* background glow */}
-      <div className="absolute top-[-200px] right-[-200px] w-[600px] h-[600px] bg-[#6A1E2B]/10 blur-[150px] rounded-full" />
-      <div className="absolute bottom-[-200px] left-[-200px] w-[600px] h-[600px] bg-black/5 blur-[160px] rounded-full" />
-      <div className="relative z-10 w-full max-w-2xl">
+      {/* TOP BAR */}
+      <div className="h-[66px] px-5 md:px-10 flex items-center justify-between">
+        <span className="text-[16px] font-semibold uppercase">Thrive</span>
+        <span className="eyebrow !text-white/80">
+          Thrive Onboarding
+        </span>
+        <span className="eyebrow !text-white/80">
+          0{step + 1} / 0{steps.length}
+        </span>
+      </div>
 
-{/* PROGRESS */}
-<div className="flex gap-2 mb-10 justify-center">
-  {steps.map((_, i) => (
-    <div
-      key={i}
-      className={`h-1 w-10 rounded-full transition-all ${
-        i <= step ? "bg-[#6A1E2B]" : "bg-black/10"
-      }`}
-    />
-  ))}
-</div>
+      {/* CONTENT */}
+      <div className="flex-1 flex items-center px-5 md:px-10">
+        <div key={step} className="reveal max-w-4xl">
 
-{/* CARD */}
-<div className="rounded-[32px] bg-white/70 backdrop-blur-2xl border border-black/5 p-10 text-center">
+          <h1 className="text-[54px] sm:text-[78px] md:text-[94px] font-normal leading-[0.95]">
+            {current.title}
+          </h1>
 
-  <div className="text-[11px] uppercase tracking-[0.35em] text-black/40">
-    Thrive Onboarding
-  </div>
+          <p className="mt-8 max-w-md text-[18px] md:text-[29px] font-light leading-[1.25] text-white/85">
+            {current.desc}
+          </p>
 
-  <h1 className="mt-6 text-4xl font-semibold tracking-tight">
-    {current.title}
-  </h1>
+        </div>
+      </div>
 
-  <p className="mt-4 text-black/50 leading-7">
-    {current.desc}
-  </p>
+      {/* PROGRESS + CONTROLS */}
+      <div className="px-5 md:px-10 pb-10">
 
-</div>
-        {/* CONTROLS */}
-        <div className="flex justify-between mt-8">
+        <div className="flex gap-2 mb-8">
+          {steps.map((_, i) => (
+            <div
+              key={i}
+              className={`h-px flex-1 transition-colors duration-800 ease-expo ${
+                i <= step ? "bg-white" : "bg-white/30"
+              }`}
+            />
+          ))}
+        </div>
+
+        <div className="flex justify-between">
 
           <button
             onClick={back}
-            className="px-6 py-3 rounded-2xl bg-white/60 border border-black/5 text-black/60 hover:text-black hover:border-[#6A1E2B]/30 transition"
+            className="pill pill-dark"
           >
             Back
           </button>
 
           <button
             onClick={next}
-            className="px-6 py-3 rounded-2xl bg-[#6A1E2B] text-white hover:shadow-[0_20px_60px_rgba(106,30,43,0.25)] transition"
+            className="pill pill-dark !border-white"
           >
             {step === steps.length - 1 ? "Start Thrive" : "Continue"}
           </button>

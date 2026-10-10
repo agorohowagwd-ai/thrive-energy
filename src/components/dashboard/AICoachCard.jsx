@@ -23,141 +23,59 @@ export default function AICoachCard({ entries, stats }) {
     ? "Moderate"
     : "Needs Attention"
     
-    return ( <section className="relative z-10 mb-12">
-    
-       <div
-        className="
-        rounded-[32px]
-        bg-white/70
-        backdrop-blur-2xl
-        border
-        border-black/5
-        p-6
-        md:p-8
-        transition-all
-        duration-500
-        hover:border-[#6A1E2B]/20
-        hover:shadow-[0_30px_90px_rgba(106,30,43,0.10)]
-      "
-      >
+    return (
+      <section>
+
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-    
+
           <div>
-    
-            <div className="text-[11px] uppercase tracking-[0.35em] text-black/40">
+
+            <div className="eyebrow !text-ash">
               AI Coach
             </div>
-    
-            <h2 className="mt-3 text-2xl md:text-3xl font-semibold tracking-tight">
+
+            <h2 className="mt-5 text-[45px] md:text-[78px] font-light leading-[1.05]">
               Energy Intelligence
             </h2>
-    
+
           </div>
-    
-          <div
-            className="
-            self-start
-            px-3
-            py-2
-            rounded-full
-            bg-[#6A1E2B]/5
-            text-[#6A1E2B]
-            text-xs
-            font-medium
-          "
-          >
+
+          <div className="pill pill-dark pill-sm self-start pointer-events-none">
+            <span className="mr-2 inline-block w-1.5 h-1.5 rounded-full bg-mint" />
             Live Analysis
           </div>
-    
+
         </div>
-    
-        <div
-          className="
-          mt-6
-          text-black/60
-          leading-7
-          max-w-4xl
-        "
-        >
+
+        <p className="mt-10 max-w-3xl text-[18px] md:text-[29px] font-light leading-[1.4] text-white/85">
           {insight}
+        </p>
+
+        <div className="mt-14 grid grid-cols-1 md:grid-cols-3 border-t border-white/30">
+
+          {[
+            ["Pattern", pattern],
+            ["Peak Energy", `${stats.highest || 0}/10`],
+            ["Recovery", recovery],
+          ].map(([label, value], i) => (
+
+            <div
+              key={label}
+              className={`py-7 ${i > 0 ? "border-t md:border-t-0 md:border-l border-white/30 md:pl-6" : ""}`}
+            >
+              <div className="eyebrow !text-ash">
+                {label}
+              </div>
+
+              <div className="mt-3 text-[29px] font-light">
+                {value}
+              </div>
+            </div>
+
+          ))}
+
         </div>
-    
-        <div
-          className="
-          mt-8
-          grid
-          grid-cols-1
-          md:grid-cols-3
-          gap-4
-        "
-        >
-    
-          <div
-            className="
-            rounded-2xl
-            bg-white/50
-            border
-            border-black/5
-            p-5
-            transition
-            hover:border-[#6A1E2B]/20
-          "
-          >
-            <div className="text-xs uppercase tracking-[0.2em] text-black/40">
-              Pattern
-            </div>
-    
-            <div className="mt-3 text-lg font-medium">
-              {pattern}
-            </div>
-          </div>
-    
-          <div
-            className="
-            rounded-2xl
-            bg-white/50
-            border
-            border-black/5
-            p-5
-            transition
-            hover:border-[#6A1E2B]/20
-          "
-          >
-            <div className="text-xs uppercase tracking-[0.2em] text-black/40">
-              Peak Energy
-            </div>
-    
-            <div className="mt-3 text-lg font-medium">
-              {stats.highest || 0}/10
-            </div>
-          </div>
-    
-          <div
-            className="
-            rounded-2xl
-            bg-white/50
-            border
-            border-black/5
-            p-5
-            transition
-            hover:border-[#6A1E2B]/20
-          "
-          >
-            <div className="text-xs uppercase tracking-[0.2em] text-black/40">
-              Recovery
-            </div>
-    
-            <div className="mt-3 text-lg font-medium">
-              {recovery}
-            </div>
-          </div>
-    
-        </div>
-      </div>
-    
-    </section>
-   
-    
+
+      </section>
     )
     }
-    

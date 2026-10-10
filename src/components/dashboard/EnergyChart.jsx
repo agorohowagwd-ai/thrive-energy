@@ -19,32 +19,23 @@ import {
     return (
       <section className="relative z-10">
   
-        <div
-          className="
-          rounded-[32px]
-          bg-white/70
-          backdrop-blur-2xl
-          border
-          border-black/5
-          p-8
-        "
-        >
+        <div>
   
-          <div className="flex items-center justify-between">
+          <div className="flex items-end justify-between border-b border-obsidian pb-6">
   
             <div>
   
-              <div className="text-[11px] uppercase tracking-[0.3em] text-black/40">
+              <div className="eyebrow">
                 Energy Timeline
               </div>
   
-              <h2 className="mt-3 text-2xl font-semibold">
+              <h2 className="mt-4 text-[45px] font-light leading-[1.15]">
                 {range.toUpperCase()} View
               </h2>
   
             </div>
   
-            <div className="text-sm text-black/40">
+            <div className="text-[12px] uppercase text-felt">
   
               {weeklyData.length} points
   
@@ -52,7 +43,7 @@ import {
   
           </div>
   
-          <div className="mt-8 h-[340px]">
+          <div className="mt-10 h-[340px]">
   
             {weeklyData.length > 1 ? (
   
@@ -63,32 +54,51 @@ import {
                 >
   
                   <CartesianGrid
-                    strokeDasharray="3 3"
-                    opacity={0.15}
+                    vertical={false}
+                    stroke="#000"
+                    strokeOpacity={0.08}
                   />
   
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 11 }}
+                    tick={{ fontSize: 11, fill: "#6d6d6d" }}
+                    axisLine={{ stroke: "#000" }}
+                    tickLine={false}
                   />
   
                   <YAxis
                     domain={[0, 10]}
+                    tick={{ fontSize: 11, fill: "#6d6d6d" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={28}
                   />
   
-                  <Tooltip />
+                  <Tooltip
+                    cursor={{ stroke: "#000", strokeWidth: 1 }}
+                    contentStyle={{
+                      borderRadius: 0,
+                      border: "1px solid #000",
+                      boxShadow: "none",
+                      fontSize: 12,
+                    }}
+                  />
   
                   <Line
                     type="monotone"
                     dataKey="energy"
-                    stroke="#6A1E2B"
-                    strokeWidth={3}
+                    stroke="#000"
+                    strokeWidth={1.5}
                     dot={{
-                      r: 4,
+                      r: 3,
+                      fill: "#fff",
+                      stroke: "#000",
+                      strokeWidth: 1,
                       cursor: "pointer",
                     }}
                     activeDot={{
-                      r: 7,
+                      r: 6,
+                      fill: "#000",
                       onClick: (_, payload) =>
                         onPointClick?.(payload.payload),
                     }}
@@ -101,8 +111,9 @@ import {
                       x={peak.date}
                       y={peak.energy}
                       r={8}
-                      fill="#FFD700"
-                      stroke="#6A1E2B"
+                      fill="#ffac2e"
+                      stroke="#000"
+                      strokeWidth={1}
                     />
   
                   ))}
@@ -113,7 +124,7 @@ import {
   
             ) : (
   
-              <div className="h-full flex items-center justify-center text-black/40">
+              <div className="h-full flex items-center justify-center text-felt text-[18px] font-light">
   
                 Add at least two entries
   

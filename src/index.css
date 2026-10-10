@@ -1,43 +1,201 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Raleway:wght@300;400&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html, body {
+/* ───────── Tokens (Monopo-style editorial monochrome) ───────── */
+
+:root {
+  --color-obsidian: #000000;
+  --color-paper: #ffffff;
+  --color-inkstone: #181818;
+  --color-felt-gray: #6d6d6d;
+  --color-slate-pill: #636363;
+  --color-pewter: #808080;
+  --color-ash-mist: #9a9a9a;
+
+  --iri-mint: #a0e0ab;
+  --iri-amber: #ffac2e;
+  --iri-oxblood: #a52d25;
+
+  --ease-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --radius-buttons: 75px;
+  --radius-cards: 0px;
+  --page-max-width: 1078px;
+}
+
+html,
+body {
   height: 100%;
-  background: #ffffff;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
-  color: #0f172a;
+  background: var(--color-paper);
+  color: var(--color-obsidian);
+  font-family: Roobert, Inter, "Söhne", system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
-/* subtle noise overlay like Apple */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.04;
-  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-  mix-blend-mode: multiply;
-}
-
-/* smooth rendering */
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* premium hover system */
-.glass-hover {
-  transition: all 0.35s ease;
+::selection {
+  background: var(--color-obsidian);
+  color: var(--color-paper);
 }
 
-.glass-hover:hover {
-  transform: translateY(-2px);
+/* ───────── Iridescent liquid backdrop (only colour in the UI) ───────── */
+
+.iridescent {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-obsidian);
+  isolation: isolate;
 }
 
-/* soft focus */
-input:focus, textarea:focus {
+.iridescent::before,
+.iridescent::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  filter: blur(70px) saturate(1.15);
+}
+
+.iridescent::before {
+  background:
+    radial-gradient(40% 45% at 25% 35%, var(--iri-mint) 0%, transparent 70%),
+    radial-gradient(38% 42% at 70% 30%, var(--iri-amber) 0%, transparent 70%),
+    radial-gradient(45% 50% at 55% 80%, var(--iri-oxblood) 0%, transparent 72%);
+  animation: iri-drift 22s var(--ease-expo) infinite alternate;
+}
+
+.iridescent::after {
+  background:
+    radial-gradient(30% 35% at 80% 75%, var(--iri-mint) 0%, transparent 70%),
+    radial-gradient(35% 40% at 15% 80%, var(--iri-amber) 0%, transparent 70%);
+  mix-blend-mode: screen;
+  opacity: 0.7;
+  animation: iri-drift-2 30s ease-in-out infinite alternate;
+}
+
+@keyframes iri-drift {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  50% { transform: translate3d(6%, -4%, 0) rotate(8deg) scale(1.08); }
+  100% { transform: translate3d(-5%, 5%, 0) rotate(-6deg) scale(1.02); }
+}
+
+@keyframes iri-drift-2 {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  100% { transform: translate3d(-8%, 6%, 0) rotate(14deg); }
+}
+
+/* ───────── Rotating circular badge ───────── */
+
+.badge-spin {
+  animation: badge-spin 18s linear infinite;
+}
+
+@keyframes badge-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iridescent::before,
+  .iridescent::after,
+  .badge-spin {
+    animation: none;
+  }
+}
+
+/* ───────── Ghost pill buttons ───────── */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-buttons);
+  padding: 11px 33px;
+  font-size: 16px;
+  line-height: 1.2;
+  border: 1px solid var(--color-obsidian);
+  color: var(--color-obsidian);
+  background: transparent;
+  transition:
+    border-color 0.4s ease,
+    letter-spacing 0.8s var(--ease-expo),
+    opacity 0.4s ease;
+}
+
+.pill:hover {
+  letter-spacing: 0.04em;
+}
+
+.pill-dark {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--color-paper);
+}
+
+.pill-dark:hover {
+  border-color: rgba(255, 255, 255, 1);
+}
+
+.pill-active {
+  background: var(--color-obsidian);
+  color: var(--color-paper);
+}
+
+.pill-sm {
+  padding: 7px 20px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+/* ───────── Inputs: square, hairline ───────── */
+
+.field {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--color-obsidian);
+  border-radius: 0;
+  background: transparent;
+  padding: 14px 0;
+  font-size: 18px;
+  color: var(--color-obsidian);
+  transition: border-color 0.4s ease;
+}
+
+.field::placeholder {
+  color: var(--color-ash-mist);
+}
+
+input:focus,
+textarea:focus {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(127, 29, 29, 0.08);
-  border-color: rgba(127, 29, 29, 0.3);
+  box-shadow: none;
+}
+
+.field:focus {
+  border-bottom-color: var(--color-felt-gray);
+}
+
+/* ───────── Eyebrow label ───────── */
+
+.eyebrow {
+  font-size: 11px;
+  line-height: 1.19;
+  text-transform: uppercase;
+  color: var(--color-felt-gray);
+}
+
+/* ───────── Reveal ───────── */
+
+.reveal {
+  animation: reveal 1.25s var(--ease-expo) both;
+}
+
+@keyframes reveal {
+  from { opacity: 0; transform: translate3d(0, 24px, 0); }
+  to { opacity: 1; transform: none; }
 }
