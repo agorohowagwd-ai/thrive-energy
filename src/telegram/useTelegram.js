@@ -26,6 +26,17 @@ export function useTelegram() {
       tg.ready();
       tg.expand();
 
+      // Telegram chrome in the app's monochrome palette:
+      // black header blends into the iridescent hero,
+      // white bottom bar matches the page canvas.
+      try {
+        tg.setHeaderColor?.("#000000");
+        tg.setBackgroundColor?.("#000000");
+        tg.setBottomBarColor?.("#ffffff");
+      } catch (e) {
+        console.warn("Telegram theming not supported", e);
+      }
+
       console.log("Telegram WebApp detected");
       console.log(tg);
 

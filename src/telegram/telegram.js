@@ -66,6 +66,12 @@ export function mainButton(text, callback) {
 
   if (!tg) return
 
+  tg.MainButton.setParams?.({
+    text,
+    color: "#000000",
+    text_color: "#ffffff",
+    has_shine_effect: false,
+  })
   tg.MainButton.setText(text)
   tg.MainButton.show()
   tg.MainButton.onClick(callback)
